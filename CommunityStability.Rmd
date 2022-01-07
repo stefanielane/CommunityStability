@@ -1,0 +1,1113 @@
+---
+title: "LadnerCommunityChanges"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# PAT PHD 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 
+
+
+```
+
+```{r libraries}
+# install.packages("ape")
+# install.packages("indicspecies")
+# install.packages("dendextend")
+#install.packages("devtools")
+
+library(tidyverse)
+library(vegan)
+library(ape)
+library(dplyr)
+library(indicspecies) # indicator species analysis
+library(ggplot2)
+library(dendextend) # dendrogram formatting
+
+
+#ordination ellipses, see http://kembellab.ca/r-workshop/biodivR/SK_Biodiversity_R.html
+# approx halfway down the page
+```
+
+```{r 2019 Analysis, echo=FALSE}
+#read data
+d2019 <- read.csv("2019_Lane_BINNED-NRCS.csv")
+#view(d2019)
+#nrow(d2019) #74
+
+#filter only plots that fall along the same lengths of transect sampled in 2019 (filter 7 plots)
+align19 <- filter(d2019, Quadrat > 0)
+nrow(align19) #67
+
+###########################
+#Cluster Analysis
+###########################
+
+d2019_select <- select(align19, -(Year:Quadrat))
+ncol(d2019_select) #43 species
+
+d2019_select_all <- select(d2019, -(Year:Quadrat))
+ncol(d2019_select_all)
+
+#name leaves
+d2019_unite <- unite(align19, plot, Quadrat, remove = TRUE, na.rm = FALSE)
+d2019_unite_all <- unite(d2019, plot, Quadrat, remove = TRUE, na.rm = FALSE)
+
+rownames(d2019_select) <- d2019_unite$plot
+
+#cluster - method ward.D does NOT square the dissimilarities. 
+d2019_ward <- d2019_select %>% 
+  dist(method = "euclidean") %>% 
+  hclust(method = "ward.D") %>% 
+  as.dendrogram()
+
+d2019_all <- d2019_select_all %>% 
+  dist(method = "euclidean") %>% 
+  hclust(method = "ward.D") %>% 
+  as.dendrogram()
+
+
+#####################################################
+# fancy dendrogram visualization from https://www.datanovia.com/en/lessons/examples-of-dendrograms-visualization/
+#####################################################
+
+
+#library(dendextend)
+mycols2019 <- c("#0072B2", "#E69F00", "#009E73")
+dend2019 <-  as.dendrogram(d2019_ward) %>%
+   set("branches_lwd", 3) %>% # Branches line width
+   set("branches_k_color", mycols2019, k = 3) %>% # Color branches by groups
+   #set("labels_colors", mycols, k = 3) %>%  # Color labels by groups
+   set("labels_cex", 0.5) # Change label size
+#fviz_dend(dend2) 
+
+#changing font sizes/formatting: https://stackoverflow.com/questions/17232178/change-label-size-of-cluster-dendrogram-in-r-3-01
+par(cex=2.5, mar=c(2.5,4,2,1))
+plot(dend2019, ylab = "Euclidean Distance", main = "2019")
+
+
+###########################
+#Indicator species analysis 
+###########################
+#following https://jkzorz.github.io/2019/07/02/Indicator-species-analysis.html 
+
+#Note: func "IndVal.g" incorporates a correction for unequal group sizes, while "IndVal" does not (p. 10)
+#Note: it was tempting to rename the community types by a plant name, but the IndVal requires a numerical matrix
+
+
+
+d2019_clstrs <- align19 %>% mutate(Association_Type2 = case_when(Quadrat %in% c(84, 15, 79, 78, 57, 80, 105, 16, 76, 77, 82, 58, 59, 100, 101, 99, 102, 56, 98, 97, 14, 42, 63, 41, 48, 49, 85, 108) ~3, Quadrat %in% c(65, 96, 44, 9, 10, 94, 38, 47, 46, 95, 11, 86, 54, 87) ~2, Quadrat %in% c(61, 74, 106, 60, 62, 66, 27, 20, 72, 37, 32, 24, 31, 43, 67, 50, 68, 30, 39, 40, 13, 55, 22, 73, 107) ~1))
+#View(d2019_clstrs)
+#Note: new column must be Association_Type2 to join with other data sets for NMS
+
+#move new column to beginning of df (if left at end, new column Association_Type gets counted in the indicspecies)
+d2019_grps <- d2019_clstrs %>% 
+  select(Association_Type2, everything())
+#view(d2019_grps)
+nrow(d2019_grps) #67
+
+abund = d2019_grps[,8:ncol(d2019_grps)]
+assoc = d2019_grps$Association_Type2
+
+## turn comments off to run - takes a minute
+# inv_r.g = multipatt(abund, assoc, func = "r.g", control = how(nperm=9999))
+# summary(inv_r.g)
+# 1 = Sedge
+# 2 = Fescue
+# 3 = Bogbean
+
+```
+
+```{r 1999 Analysis , echo=FALSE}
+
+d1999 <- read.csv("1999_Denoth_ORIGINAL-NRCS.csv") #first column has a byte order mark
+colnames(d1999)[1] <- gsub('^...','',colnames(d1999)[1])
+#view(d1999)
+
+#filter only plots that fall along the same lengths of transect sampled in 2019
+align99 <- d1999 %>% filter((between(Quadrat, 9,16)) | (between(Quadrat, 20,32)) | (between(Quadrat, 37,44)) | (between(Quadrat, 46,50)) | (between(Quadrat, 55,69)) | (between(Quadrat, 72,88)) | (between(Quadrat, 93,108)))
+nrow(align99) #82
+
+d1999_select <- select(align99, -(Year:Quadrat))
+ncol(d1999_select) #47
+
+#name leaves
+d1999_unite <- unite(align99, plot, Quadrat, remove = TRUE, na.rm = FALSE)
+
+rownames(d1999_select) <- d1999_unite$plot
+
+
+###########################
+#Cluster Analysis
+###########################
+
+#cluster - method ward.D does NOT square the dissimilarities. 
+d1999_ward <- d1999_select %>% 
+  dist(method = "euclidean") %>% 
+  hclust(method = "ward.D") %>% 
+  as.dendrogram()
+
+#library(dendextend)
+mycols1999 <- c("#009E73", "#0072B2", "#E69F00")
+dend1999 <-  as.dendrogram(d1999_ward) %>%
+   set("branches_lwd", 3) %>% # Branches line width
+   set("branches_k_color", mycols1999, k = 3) %>% # Color branches by groups
+   #set("labels_colors", mycols, k = 3) %>%  # Color labels by groups
+   set("labels_cex", 0.5) # Change label size
+#fviz_dend(dend2) 
+
+#changing font sizes/formatting: https://stackoverflow.com/questions/17232178/change-label-size-of-cluster-dendrogram-in-r-3-01
+par(cex=2.5, mar=c(2.5,4,2,1))
+plot(dend1999, ylab = "Euclidean Distance", main = "1999")
+
+###########################
+#Indicator species analysis 
+###########################
+#following https://jkzorz.github.io/2019/07/02/Indicator-species-analysis.html 
+d1999_clstrs <- align99 %>% mutate(Association_Type2 = case_when(Quadrat %in% c(39, 40, 31, 29, 30, 27, 26, 28, 32, 69, 22, 46, 23, 24, 87, 88, 94, 73, 72, 108, 85, 42, 44, 41, 43, 96, 95, 97, 12, 100, 101) ~1, Quadrat %in% c(82, 83, 13, 14, 84, 77, 78, 102, 103, 105, 98, 99, 81, 80, 104, 16, 15, 79) ~3, Quadrat %in% c(10, 11, 37, 38, 20, 93, 107, 9, 106, 62, 25, 59, 61, 56, 57, 58, 68, 60, 67, 55, 86, 65, 66, 63, 64, 76, 74, 75, 50, 47, 49, 21, 48) ~2))
+
+#view(d1999_clstrs)
+
+#move new column to beginning of df (if left at end, new column Association_Type gets counted in the indicspecies)
+d1999_grps <- d1999_clstrs %>% 
+  select(Association_Type2, everything())
+#view(d1999_grps)
+
+abund99 = d1999_grps[,5:ncol(d1999_grps)]
+assoc99 = d1999_grps$Association_Type2
+
+## turn comments off to run - takes a minute
+# inv99_r.g = multipatt(abund99, assoc99, func = "r.g", control = how(nperm=9999))
+# summary(inv99_r.g)
+
+
+```
+
+```{r 1979 Analysis , echo=FALSE}
+
+d1979 <- read.csv("1979_Bradfield_ORIGINAL-NRCS.csv") #first column has a byte order mark
+colnames(d1979)[1] <- gsub('^...','',colnames(d1979)[1])
+#view(d1979)
+
+align79 <- d1979 %>% filter((between(Quadrat, 9,16)) | (between(Quadrat, 20,32)) | (between(Quadrat, 37,44)) | (between(Quadrat, 46,50)) | (between(Quadrat, 55,69)) | (between(Quadrat, 72,88)) | (between(Quadrat, 93,108)))
+nrow(align79) #82
+
+d1979_select <- select(align79, -(Year:Association_Subtype))
+#ncol(d1979_select) #55
+#view(d1979_select)
+
+#name leaves
+d1979_unite <- unite(align79, plot, Quadrat, remove = TRUE, na.rm = FALSE)
+
+rownames(d1979_select) <- d1979_unite$plot
+
+###########################
+#Cluster Analysis
+###########################
+
+d1979_ward <- d1979_select %>% 
+  dist(method = "euclidean") %>% 
+  hclust(method = "ward.D") %>% 
+  as.dendrogram()
+
+#library(dendextend)
+mycols1979 <- c("#009E73", "#0072B2", "#E69F00")
+dend1979 <-  as.dendrogram(d1979_ward) %>%
+   set("branches_lwd", 3) %>% # Branches line width
+   set("branches_k_color", mycols1979, k = 3) %>% # Color branches by groups
+   #set("labels_colors", mycols, k = 3) %>%  # Color labels by groups
+   set("labels_cex", 0.5) # Change label size
+#fviz_dend(dend2) 
+
+#changing font sizes/formatting: https://stackoverflow.com/questions/17232178/change-label-size-of-cluster-dendrogram-in-r-3-01
+par(cex=2.5, mar=c(2.5,4,2,1))
+plot(dend1979, ylab = "Euclidean Distance", main = "1979")
+
+###########################
+#Indicator species analysis 
+###########################
+
+#following https://jkzorz.github.io/2019/07/02/Indicator-species-analysis.html 
+d1979_clstrs <- align79 %>% mutate(Association_Type2 = case_when(Quadrat %in% c(30, 31, 27, 24, 28, 29, 32, 108, 25, 26, 60, 48, 57, 58, 59, 49, 68, 69, 22, 23, 86, 93, 87, 88, 97, 94, 95, 96, 20, 72, 47, 73, 55, 56) ~1, Quadrat %in% c(80, 81, 64, 62, 65, 82, 83, 98, 84, 85, 78, 79, 63, 66, 50, 99, 100, 61, 67) ~3, Quadrat %in% c(38, 74, 11, 12, 107, 9, 10, 76, 106, 102, 101, 103, 42, 43, 14, 15, 40, 41, 39, 44, 21, 37, 16, 13, 104, 105, 75, 46, 77) ~2))
+#view(d1979_clstrs)
+
+#move new column to beginning of df (if left at end, new column Association_Type gets counted in the indicspecies)
+d1979_grps <- d1979_clstrs %>% 
+  select(Association_Type2, everything())
+#view(d1979_grps)
+
+abund79 = d1979_grps[,7:ncol(d1979_grps)]
+assoc79 = d1979_grps$Association_Type2
+
+## turn comments off to run - takes a minute
+# inv79_r.g = multipatt(abund79, assoc79, func = "r.g", control = how(nperm=9999))
+# summary(inv79_r.g)
+
+
+```
+
+FIGURE 3
+``` {r multi panel dendrograms}
+#install.packages("svglite")
+library(svglite)
+
+svglite("Fig3.svg", width=8, height=5)
+par(mfrow = c(1,3), mar = c(6, 5, 5, 3), xpd = TRUE, mgp=c(1.75, .75,  0))
+plot(dend1979, main = "1979")
+mtext(text = "Euclidean Distance", side = 2, line = 3, col = "black")
+plot(dend1999, main = "1999")
+legend("bottom", c("Sedge", "Fescue", "Bogbean"),
+        title = "Assemblage Type", horiz = TRUE, inset = c(0, -0.2),
+        col = c("#009E73", "#E69F00", "#0072B2"), pch = rep(15,2),
+        bty = "n", pt.cex = 1.5, text.col = "black")
+plot(dend2019, main = "2019")
+dev.off()
+
+
+
+
+```
+
+FIGURE 4
+```{r NMDS w/ 95% CI, ANOSIM, PERMANOVA}
+
+# largely based on https://stackoverflow.com/questions/13794419/plotting-ordiellipse-function-from-vegan-package-onto-nmds-plot-created-in-ggplo
+
+# see also
+# http://kembellab.ca/r-workshop/biodivR/SK_Biodiversity_R.html
+# https://stackoverflow.com/questions/46132682/overlap-percentage-of-nmds-using-metamds-in-vegan-package-in-r
+
+join_40 <- lst(d1979_grps, d1999_grps, d2019_grps) %>% reduce(full_join) %>% replace(is.na(.), 0) %>% select(Elev_AMSL_m:SLL_Quadrat, everything())
+nrow(join_40) #231
+
+
+# two outliers: 2019 site 87 is an outlier on NMDS plot. remove here
+join_40_no_outliers <- join_40[!(join_40$Year == 2019 & join_40$Quadrat == 87),]
+#nrow(join_40_no_outliers) #230
+  
+join_40_no_outliers$Association_Type2 <- factor(join_40_no_outliers$Association_Type2, levels = c("1", "2", "3"),
+                  labels = c("Sedge", "Fescue", "Bogbean"))
+
+# rerun NMDS w/ outliers removed. All descriptive text is removed here.
+
+com_out = join_40_no_outliers[,11:ncol(join_40_no_outliers)]
+m_com_out = as.matrix(com_out)
+set.seed(123)
+nmds_out = metaMDS(m_com_out, distance = "bray")
+nmds_out # stress = 0.232
+
+data.scores_out = as.data.frame(scores(nmds_out))
+
+data.scores_out$Year = join_40_no_outliers$Year
+data.scores_out$Association_Type2 = join_40_no_outliers$Association_Type2
+
+Ladner.scores_out <- data.scores_out %>%
+  mutate(Year = as.character(Year)) %>%
+           mutate(Association_Type2 = as.character(Association_Type2))
+
+#distance for NMDS
+sol <- metaMDS(com_out, distance = "bray", k = 3, trymax = 100) 
+# plot(sol$points, col = join_40_no_outliers$Year)
+# ordiellipse(sol, join_40_no_outliers$Year, display = "sites", kind = "sd", label = T)
+
+
+NMDS = data.frame(MDS1 = sol$points[,1], MDS2 = sol$points[,2], Year=join_40_no_outliers$Year, Comm = join_40_no_outliers$Association_Type2)
+NMDS$Comm <- as.factor(NMDS$Comm)
+NMDS$Year <- as.factor(NMDS$Year)
+#NMDS.mean = aggregate(NMDS[,1:2],list(Year=NMDS$Year),mean)
+ggplot(NMDS, aes(x = MDS1, y = MDS2)) + 
+  geom_point(aes(shape = Year, color = Year))
+
+
+veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
+{
+theta <- (0:npoints) * 2 * pi/npoints
+Circle <- cbind(cos(theta), sin(theta))
+t(center + scale * t(Circle %*% chol(cov)))
+}
+
+df_ell <- data.frame() 
+
+for(g in levels(NMDS$Year)){
+df_ell <- rbind(df_ell, 
+                cbind(as.data.frame(with(NMDS[NMDS$Year==g,],
+                veganCovEllipse(cov.wt(cbind(MDS1,MDS2),
+                wt=rep(1/length(MDS1),
+                length(MDS1)))$cov,
+                center=c(mean(MDS1),
+                mean(MDS2))))),
+                Year=g))}
+
+#### 
+LadnerNMDS <- ggplot(Ladner.scores_out, aes(x = NMDS1, y = NMDS2)) + 
+    geom_point(size = 5, alpha = 0.7, aes(shape = Association_Type2, colour = Year))+ 
+    theme(axis.text.y = element_text(colour = "black", size = 16, face = "bold"), 
+    axis.text.x = element_text(colour = "black", face = "bold", size = 16), 
+    legend.text = element_text(size = 14, face ="bold", colour ="black"), 
+    legend.position = "bottom", axis.title.y = element_text(face = "bold", size = 14), 
+    axis.title.x = element_text(face = "bold", size = 16, colour = "black"), 
+    legend.title = element_text(size = 14, colour = "black", face = "bold"), 
+    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
+    legend.key=element_blank()) + 
+    labs(x = "NMDS1", colour = "Observation Year", y = "NMDS2", shape = "Community Association Type", caption = "Ellipses are 95%   confidence intervals") + 
+    scale_colour_manual(values = c("#4B0082", "#9370DB", "#DDA0DD")) +
+    geom_path(data=df_ell, aes(x=MDS1, y=MDS2, color = Year), size =2, alpha = 0.7) 
+LadnerNMDS
+
+ggsave("Fig4.svg", width = 10, height = 6, units = "in", device = 'svg')
+
+################# 
+# NMDS Year only (no assemblage)
+NMDS_yr <- ggplot(Ladner.scores_out, aes(x = NMDS1, y = NMDS2)) + 
+    geom_point(size = 5, alpha = 0.7, aes(shape = Year, colour = Year))+ 
+    theme(axis.text.y = element_text(colour = "black", size = 16, face = "bold"), 
+    axis.text.x = element_text(colour = "black", face = "bold", size = 16), 
+    legend.text = element_text(size = 14, face ="bold", colour ="black"), 
+    legend.position = "bottom", axis.title.y = element_text(face = "bold", size = 14), 
+    axis.title.x = element_text(face = "bold", size = 16, colour = "black"), 
+    legend.title = element_text(size = 14, colour = "black", face = "bold"), 
+    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
+    legend.key=element_blank()) + 
+    labs(x = "NMDS1", y = "NMDS2", caption = "Ellipses are 95%   confidence intervals") + 
+    scale_colour_manual(values = c("#4B0082", "#9370DB", "#DDA0DD")) +
+    geom_path(data=df_ell, aes(x=MDS1, y=MDS2, color = Year), size =2, alpha = 0.7) 
+NMDS_yr
+
+#######################
+# Analysis of Similarity
+#######################
+#note: ANOSIM is sensitive to inequal compositional variance (see Anderson & Walsh, 2013)
+# these attempts use full years' dataset, not by community
+
+#analysis of similarity between years of observation
+ano_out = anosim(m_com_out, join_40_no_outliers$Year, distance = "bray", permutations = 9999)
+ano_out
+# ANOSIM statistic R: 0.2021
+#       Significance: 1e-04 
+
+#analysis of similarity between community types, combined across all years
+ano_assoc_out = anosim(m_com_out, join_40_no_outliers$Association_Type2, distance = "bray", permutations = 9999)
+ano_assoc_out
+
+
+#######################
+# PERMANOVA
+#######################
+permanova_out = adonis(m_com_out ~ join_40_no_outliers$Year, permutations = 999, method = "bray")
+
+
+#                        Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)    
+# join_40_no_outliers$Year   1     5.883  5.8833   22.25 0.08891  0.001 ***
+# Residuals                228    60.287  0.2644         0.91109           
+# Total                    229    66.170                 1.00000  
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# https://www.researchgate.net/post/Posthoc_test_for_permanova_adonis
+#install.packages("devtools")
+
+
+```
+
+FIGURE 5
+```{r NMDS, just 2019 w/ enviro loadings}
+# see tutorial https://jkzorz.github.io/2020/04/04/NMDS-extras.html 
+library(vegan)
+library(ggplot2)
+
+# using d2019_grps since updated SLL data w/ elev & dist from channel
+
+com_2019 = d2019_grps[,8:50]
+env_2019 = d2019_grps[,3:4]
+
+#convert community to a matrix
+m_com_2019 = as.matrix(com_2019)
+
+#nmds code
+set.seed(123)
+nmds_2019 = metaMDS(m_com_2019, distance = "bray")
+nmds_2019
+# stress = 0.199
+
+en_2019 = envfit(nmds_2019, env_2019, permutations = 999, na.rm = TRUE)
+
+# basic nmds plot
+plot(nmds_2019)
+plot(en_2019)
+
+# nicer plot
+
+# extract NMDS & envfit output to vectors
+scores_2019 = as.data.frame(scores(nmds_2019))
+en_coord = as.data.frame(scores(en_2019, "vectors")) * ordiArrowMul(en_2019)
+rownames(en_coord) <- c("Elevation AMSL (m)", "Distance from channel (m)")
+
+# create CI and ellipses
+NMDS_plot = data.frame(MDS1 = nmds_2019$points[,1], MDS2 = nmds_2019$points[,2], Comm_19 = d2019_grps$Association_Type2)
+NMDS_plot$Comm_19 <- as.factor(NMDS_plot$Comm_19)
+
+
+veganCovEllipse<-function (cov, center = c(0, 0), scale = 1, npoints = 100) 
+{
+theta <- (0:npoints) * 2 * pi/npoints
+Circle <- cbind(cos(theta), sin(theta))
+t(center + scale * t(Circle %*% chol(cov)))
+}
+
+df_ell_19 <- data.frame() 
+
+for(g in levels(NMDS_plot$Comm_19)){
+df_ell_19 <- rbind(df_ell_19, 
+                cbind(as.data.frame(with(NMDS_plot[NMDS_plot$Comm_19==g,],
+                veganCovEllipse(cov.wt(cbind(MDS1,MDS2),
+                wt=rep(1/length(MDS1),
+                length(MDS1)))$cov,
+                center=c(mean(MDS1),
+                mean(MDS2))))),
+                Comm_19=g))}
+
+# plot the whole thing
+plot_2019 = ggplot(NMDS_plot, aes(x = MDS1, y = MDS2)) + 
+    geom_segment(aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2), 
+       data = en_coord, size =1, alpha = 0.5, colour = "grey30") +
+    geom_text(data = en_coord, aes(x = NMDS1, y = NMDS2), colour = "black", 
+       fontface = "bold", label = row.names(en_coord)) +
+    geom_point(size = 5, alpha = 0.5, aes(shape = Comm_19, colour = Comm_19))+ 
+    geom_path(data=df_ell_19, aes(x=MDS1, y=MDS2, color = Comm_19), size =2, alpha = 0.6) +
+    theme(axis.text.y = element_text(colour = "black", size = 16, face = "bold"), 
+    axis.text.x = element_text(colour = "black", face = "bold", size = 16), 
+    legend.text = element_text(size = 14, face ="bold", colour ="black"), 
+    legend.position = "bottom", axis.title.y = element_text(face = "bold", size = 14), 
+    axis.title.x = element_text(face = "bold", size = 16, colour = "black"), 
+    legend.title = element_text(size = 14, colour = "black", face = "bold"), 
+    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
+    legend.key=element_blank()) + 
+    labs(x = "NMDS1", y = "NMDS2", colour = "Community Association Type", caption = "2019 Community Survey")  + 
+    scale_colour_manual(values = c("#1B7837", "#FDAE61", "#762A83"), labels = c("Sedge", "Fescue", "Bogbean"))  
+plot_2019
+
+ggsave("Fig5.svg")
+
+
+# library(RColorBrewer)
+#brewer.pal(9, "Greys")
+
+anosim_d2019_grps = anosim(m_com_2019, d2019_grps$Association_Type2, distance = "bray", permutations = 9999)
+anosim_d2019_grps
+# ANOSIM statistic R: 0.584 
+#       Significance: 1e-04 
+
+```
+
+```{r PERMDISP & BETADISP}
+
+###################
+# PERMDISP (permutational analysis of multivariate disperson)
+# dispersion tests: is compositional variance equal? that is, are groups homogeneously dispersed wrt species sampled? 
+##################
+
+# structured following:
+# https://rfunctions.blogspot.com/2019/03/betadisper-and-adonis-homogeneity-of.html
+# https://mattsigal.github.io/eqcov_supp/betadisp-ex.html
+
+
+#####
+# select community groups
+#####
+bogbean <- join_40_no_outliers %>% 
+  filter(Association_Type2 == "Bogbean")
+
+sedge <- join_40_no_outliers %>% 
+  filter(Association_Type2 == "Sedge")
+
+fescue <- join_40_no_outliers %>% 
+  filter(Association_Type2 == "Fescue")
+
+#####
+# cover as matrix
+#####
+bogbean_out = bogbean[,10:ncol(bogbean)]
+matrix_bogbean = as.matrix(bogbean_out)
+
+sedge_out = sedge[,10:ncol(sedge)]
+matrix_sedge = as.matrix(sedge_out)
+
+fescue_out = fescue[,10:ncol(fescue)]
+matrix_fescue = as.matrix(fescue_out)
+
+#####
+# calculate distances
+#####
+dst_bogbean <- vegdist(bogbean[,10:81], method = "bray")
+
+dst_sedge <- vegdist(sedge[,10:81], method = "bray")
+
+dst_fescue <- vegdist(fescue[,10:81], method = "bray")
+
+#####
+# calculate dispersion
+#####
+
+betadisper_bogbean <- betadisper(dst_bogbean, bogbean$Year)
+
+betadisper_sedge <- betadisper(dst_sedge, sedge$Year)
+
+betadisper_fescue <- betadisper(dst_fescue, fescue$Year)
+
+#####
+# use group dispersions to perform ANOVA/TukeyHSD, or permutation for CCA or RDA to test sig dif of dispersions. 
+# a > 0.05 means group dispersions are homogenous ("null hypothesis of no difference in dispersion between groups")
+#####
+
+
+anova(betadisper_bogbean)
+# F = 2.61, P = 0.08
+permutest(betadisper_bogbean)
+# F = 2.61, p = 0.094; years are homogeneously dispersed (compositional variance is equal)
+
+anova(betadisper_fescue)
+# f = 1.294, P = 0.28
+permutest(betadisper_fescue)
+#F = 1.294, p = 0.297
+
+anova(betadisper_sedge)
+# f = 3.44, P = 0.036
+permutest(betadisper_sedge)
+# F = 3.44, p = 0.044
+
+#####
+# plot dispersions to visualize heterogeneity
+#####
+plot(betadisper_bogbean)
+plot(betadisper_sedge)
+plot(betadisper_fescue)
+
+
+###################
+# PERMANOVA (permutational analysis of variance)
+# adonis: are groups composed of different species? 
+##################
+adonis(matrix_bogbean ~ bogbean$Year, perm = 999, method = "bray")
+
+adonis(matrix_sedge ~ sedge$Year, perm = 999, method = "bray")
+
+adonis(matrix_fescue ~ fescue$Year, perm = 999, method = "bray")
+
+
+######
+# boxplot dispersion distances
+#####
+
+labs_bb <- paste("Dimension", 10:82, "(", 
+              round(100*betadisper_bogbean$eig / sum(betadisper_bogbean$eig), 2), "%)")
+
+plot(betadisper_bogbean, cex=1, pch=15:17,
+     main="Sampling years (bogbean): MDS coordinates", cex.lab=1.25,
+     xlab=labs_bb[1], ylab=labs_bb[2],
+     hull=FALSE, ellipse=TRUE, conf=0.68, lwd=2)
+
+boxplot(betadisper_bogbean, xlab="Sampling years (bogbean)", notch=FALSE, col=c("gray", "red", "green"))
+
+```
+
+```{R 1979-2019 diversity calculations}
+
+#######################
+# Sedge 
+#######################
+
+# select only plots in sedge group
+sedge1979 <- d1979_grps %>% 
+  filter(Association_Type2 == 1) %>% 
+  select(-(Association_Type2:Association_Subtype)) 
+#nrow(sedge1979) #34 plots
+
+sedge1999 <- d1999_grps %>% 
+  filter(Association_Type2 == 1) %>% 
+  select(-(Association_Type2:Quadrat)) 
+#nrow(sedge1999) #31 plots
+
+sedge2019 <- d2019_grps %>% 
+  filter(Association_Type2 == 1) %>% 
+  select(-(Association_Type2:Quadrat)) 
+#nrow(sedge2019) #25
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#select only species present
+sp_present_sedge1979 <- sedge1979[, colSums(sedge1979 != 0) > 0]
+sp_present_sedge1999 <- sedge1999[, colSums(sedge1999 != 0) > 0]
+sp_present_sedge2019 <- sedge2019[, colSums(sedge2019 != 0) > 0]
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ncol = # species present
+ncol(sp_present_sedge1979) #34
+ncol(sp_present_sedge1999) #35
+ncol(sp_present_sedge2019) #34
+
+##~~~~~~~~~~~~~~~~~~~
+# Alpha diversity
+##~~~~~~~~~~~~~~~~~~~
+
+sp_plot_sedge1979 <- apply(sp_present_sedge1979 >0,1,sum)
+#[1]   7  7  7 10  9  8  8  5  7  9  6  5 10  6 14  8 11  7 11 11 15  8 11  8 10 12 10  8 10 11  6  7 10  5
+
+sp_plot_sedge1999 <- apply(sp_present_sedge1999 >0,1,sum)
+#[1]  9  8  8  5 10  7  6 10  8  9  7  7  7  7 11  9  7 10 13  6  8 12  7  8  7  6 10 11 10  8  5
+
+sp_plot_sedge2019 <- apply(sp_present_sedge2019 >0,1,sum)
+#[1]  8 11  9 11  9 11  7  2  5  9  7  9 11  6  8 10 10 12  8  7  3  5 10  5  8
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# species density = mean # sp
+mean(sp_plot_sedge1979) #8.7
+mean(sp_plot_sedge1999) #8.3
+mean(sp_plot_sedge2019) #8.0
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#sd of species density
+sd(sp_plot_sedge1979) #2.5
+sd(sp_plot_sedge1999) #2.0
+sd(sp_plot_sedge2019) #2.6
+
+##~~~~~~~~~~~~~~~~~~~
+# Beta diversity: total n species divided by density
+##~~~~~~~~~~~~~~~~~~~
+
+ncol(sp_present_sedge1979)/mean(sp_plot_sedge1979) #3.9
+ncol(sp_present_sedge1999)/mean(sp_plot_sedge1999) #4.2
+ncol(sp_present_sedge2019)/mean(sp_plot_sedge2019) #4.2
+
+#######################
+# Fescue 
+#######################
+
+fescue1979 <- d1979_grps %>% 
+  filter(Association_Type2 == 2) %>% 
+  select(-(Association_Type2:Quadrat)) 
+#nrow(fescue1979) #29
+
+fescue1999 <- d1999_grps %>% 
+  filter(Association_Type2 == 2) %>% 
+  select(-(Association_Type2:Quadrat)) 
+#nrow(fescue1999) #33
+
+fescue2019 <- d2019_grps %>% 
+  filter(Association_Type2 == 2) %>% 
+  select(-(Association_Type2:Quadrat)) 
+#nrow(fescue2019) #14
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#select only species present
+sp_present_fescue1979 <- fescue1979[, colSums(fescue1979 != 0) > 0]
+sp_present_fescue1999 <- fescue1999[, colSums(fescue1999 != 0) > 0]
+sp_present_fescue2019 <- fescue2019[, colSums(fescue2019 != 0) > 0]
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ncol = # species present
+ncol(sp_present_fescue1979) #47
+ncol(sp_present_fescue1999) #41
+ncol(sp_present_fescue2019) #26
+
+##~~~~~~~~~~~~~~~~~~~
+# Alpha diversity
+##~~~~~~~~~~~~~~~~~~~
+
+sp_plot_fescue1979 <- apply(sp_present_fescue1979 >0,1,sum)
+#[1]   7  7  9 15 13 12 12 17 13  8  7 18 17 11 12 16 18 11  8 11 10 12 14 20 20 17 15 11 11
+sp_plot_fescue1999 <- apply(sp_present_fescue1999 >0,1,sum)
+#[1] 5  6 10  7  9  6  6  5 17 17 14 13 11 16 12 12  7  8 16 12 14  9 10 10 12 15  5  5  6  8  5  5  7
+
+sp_plot_fescue2019 <- apply(sp_present_fescue2019 >0,1,sum)
+#[1] 4 10  7  2  6  7 10 11  7  3  5  8  6  7
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# species density = mean # sp
+mean(sp_plot_fescue1979) #12.8
+mean(sp_plot_fescue1999) #9.7
+mean(sp_plot_fescue2019) #6.6
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#sd of species density
+sd(sp_plot_fescue1979) #3.9
+sd(sp_plot_fescue1999) #3.9
+sd(sp_plot_fescue2019) #2.6
+
+##~~~~~~~~~~~~~~~~~~~
+# Beta diversity: total n species divided by density
+##~~~~~~~~~~~~~~~~~~~
+
+ncol(sp_present_fescue1979)/mean(sp_plot_fescue1979) #3.7
+ncol(sp_present_fescue1999)/mean(sp_plot_fescue1999) #4.2
+ncol(sp_present_fescue2019)/mean(sp_plot_fescue2019) #3.9
+
+#######################
+# Bogbean 
+#######################
+
+bogbean1979 <- d1979_grps %>% 
+  filter(Association_Type2 == 3) %>% 
+  select(-(Association_Type2:Quadrat)) 
+#nrow(bogbean1979) #19
+
+bogbean1999 <- d1999_grps %>% 
+  filter(Association_Type2 == 3) %>% 
+  select(-(Association_Type2:Quadrat)) 
+#nrow(bogbean1999) #18
+
+bogbean2019 <- d2019_grps %>% 
+  filter(Association_Type2 == 3) %>% 
+  select(-(Association_Type2:Quadrat)) 
+#nrow(bogbean2019) #28
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#select only species present
+sp_present_bogbean1979 <- bogbean1979[, colSums(bogbean1979 != 0) > 0]
+sp_present_bogbean1999 <- bogbean1999[, colSums(bogbean1999 != 0) > 0]
+sp_present_bogbean2019 <- bogbean2019[, colSums(bogbean2019 != 0) > 0]
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ncol = # species present
+ncol(sp_present_bogbean1979) #32
+ncol(sp_present_bogbean1999) #36
+ncol(sp_present_bogbean2019) #34
+
+##~~~~~~~~~~~~~~~~~~~
+# Alpha diversity
+##~~~~~~~~~~~~~~~~~~~
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+sp_plot_bogbean1979 <- apply(sp_present_bogbean1979 >0,1,sum)
+#[1]  12 16 12 11  9 17 12 16 18 19 15 15  6  7 11 14 10 10 14
+
+sp_plot_bogbean1999 <- apply(sp_present_bogbean1999 >0,1,sum)
+#[1]  12 14 13 13 14 17 13 10 12 10 12 12 12 10  6  6  7 14
+
+sp_plot_bogbean2019 <- apply(sp_present_bogbean2019 >0,1,sum)
+#[1]  10 11  8 11 12 11 11 10 10  7 12 11  9 14 12  9 10  7 11 14 11 12  9 11  6 11 12 11
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# species density = mean # sp
+mean(sp_plot_bogbean1979) #12.8
+mean(sp_plot_bogbean1999) #11.5
+mean(sp_plot_bogbean2019) #10.5
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#sd of species density
+sd(sp_plot_bogbean1979) #3.6
+sd(sp_plot_bogbean1999) #2.9
+sd(sp_plot_bogbean2019) #1.9
+
+##~~~~~~~~~~~~~~~~~~~
+# Beta diversity: total n species divided by density
+##~~~~~~~~~~~~~~~~~~~
+
+ncol(sp_present_bogbean1979)/mean(sp_plot_bogbean1979) #2.5
+ncol(sp_present_bogbean1999)/mean(sp_plot_bogbean1999) #3.1
+ncol(sp_present_bogbean2019)/mean(sp_plot_bogbean2019) #3.2
+```
+
+FIGURE 6
+```{r invasive species summaries}
+#https://jkzorz.github.io/2019/06/05/stacked-bar-plots.html
+#https://stackoverflow.com/questions/38452577/making-stack-bar-plot-of-bacterial-abundance
+
+
+
+join_40_no_outliers$Year <- as.character(join_40_no_outliers$Year)
+
+join_40_no_outliers %>% 
+  select(Year, Association_Type2, AGST2:SYSU4) %>% 
+  write.csv('join_species.csv', row.names = F)
+
+species <- read.csv("join_species.csv", header = TRUE)
+species$Year <- as.character(species$Year)
+
+
+Ladner_long <- species %>% 
+  pivot_longer(AGST2:SYSU4, names_to = "Species", values_to = "Cover") %>% 
+  mutate(Species_groups = ifelse(Species %in% c("IRPS", "MYSC", "RUCO2", "CIAR4", "Lycopus_sp", "SOAR2", "POHY", "ALGE2"), "Other Non-native", 
+                          ifelse(Species =="AGST2", "Agrostis stolonifera",
+                          ifelse(Species == "LYSA2", "Lythrum salicaria",
+                          ifelse(Species == "FEAR3", "Festuca arundinaceae",
+                          ifelse(Species == "MEAQ", "Mentha aquatica",
+                          ifelse(Species == "PHAR3", "Phalaris arundinaceae", 
+                          "Native Species")))))))
+ Ladner_long$Species_groups <- factor(Ladner_long$Species_groups, 
+                                      levels = c("Agrostis stolonifera", "Festuca arundinaceae", 
+                                                 "Lythrum salicaria", "Mentha aquatica", 
+                                                 "Phalaris arundinaceae","Other Non-native","Native Species"))
+
+# what would this be, avg. relative abundance per plot? How is Abundance calculated??
+ library(RColorBrewer)
+ library(ggtext)
+
+ italics <- expression(italic("Agrostis stolonifera"), 
+                       italic("Festuca arundinaceae"), 
+                       italic("Lythrum salicaria"), 
+                       italic("Mentha aquatica"), 
+                       italic("Phalaris arundinaceae"),"Other Non-native","Native Species")
+ 
+ggplot(Ladner_long, aes(fill=Species_groups, y=Cover, x=Year)) + 
+    geom_bar(position="fill", stat="identity") + theme_classic()+
+    facet_grid(~Association_Type2, scales = "free", space = "free") + 
+    theme(text = element_text(size = 16)) +
+    theme(panel.spacing.x = unit(1.25, "lines")) +
+    theme(axis.text.x = element_text(angle = 45, margin = margin(t=20, r=100)))+
+    scale_fill_brewer(name = "", palette = "Set3", labels = italics) +
+    theme(legend.text.align = 0) +
+    labs(y="Relative Abundance 
+         (proportion of plot cover)", x="Observation Date") 
+#ggsave("Fig6.svg")
+ggsave("Fig6.png")
+
+
+# Ladner_abund <- Ladner_long %>% 
+#   group_by(Year, Association_Type2, Endemism) %>% 
+#   dplyr::summarise(
+#     n = n(),
+#     mean = mean(Cover, na.rm = TRUE),
+#     sd = sd(Cover, na.rm = TRUE),
+#     se = sd/sqrt(n))
+
+
+#~~~~~~~~~~~~~ see also
+#https://kembellab.ca/r-workshop/biodivR/SK_Biodiversity_R.html
+
+```
+
+
+```{r community proximity to channel}
+
+ggplot(data=d2019_grps, 
+    aes(x= Association_Type2, y=Dist_channel_m, group = Association_Type2)) +
+    theme(text = element_text(size = 20)) +
+    geom_boxplot(size=1, alpha = 1/10)+ theme_classic() +
+  labs(y="Distance from nearest channel edge (m)", x="Community Type") +
+  scale_x_continuous(breaks = 1:3, labels = c("Sedge", "Fescue", "Bogbean"))
+
+####################################
+# ANOVA of distance to channel
+####################################
+library(rstatix)
+library(ggpubr)
+
+d2019_grps$Association_Type2 <- as.factor(d2019_grps$Association_Type2)
+
+# build model, check assumptions
+comm_model <- lm(Dist_channel_m ~ Association_Type2, data = d2019_grps)
+ggqqplot(residuals(comm_model))
+plot(comm_model, 1)
+
+ANOVA_comm <- d2019_grps %>% anova_test(Dist_channel_m ~ Association_Type2)
+ANOVA_comm
+
+tukey_comm <- d2019_grps %>% tukey_hsd(Dist_channel_m ~ Association_Type2)
+tukey_comm # sedge and bogbean are significantly different distances from channel edge (p = 0.0045), but not sedge:fescue or fescue:bogbean
+# could suggest that fesuce-type is encroaching inward into marsh, as invasive species tolerant of saturation (RCG, bentgrass, loosestrife) can make inroads
+
+```
+
+
+
+Additional analyses, not in manuscript
+```{r 2019 PCA of community types}
+###########################
+# PCA
+###########################
+#from  OurCodingClub
+
+#eigenvalues
+PCA2019 <- rda(d2019_select, scale = FALSE)
+
+# Now plot a bar plot of relative eigenvalues. This is the percentage variance explained by each axis
+barplot(as.vector(PCA2019$CA$eig)/sum(PCA2019$CA$eig))
+# How much of the variance in our dataset is explained by the first principal component? -> > 25%
+
+
+# Calculate the percent of variance explained by first two axes
+sum((as.vector(PCA2019$CA$eig)/sum(PCA2019$CA$eig))[1:2]) #42% of variance explained by first two axes
+
+sum((as.vector(PCA2019$CA$eig)/sum(PCA2019$CA$eig))[1]) #28.7% of variance explained by first axis
+sum((as.vector(PCA2019$CA$eig)/sum(PCA2019$CA$eig))[2]) #13.3% of variance explained by second axis
+
+plot(PCA2019)
+plot(PCA2019, display = "sites", type = "text")
+plot(PCA2019, display = "species", type = "text")
+
+# You can extract the species and site scores on the new PC for further analyses:
+sitePCAmed <- PCA2019$CA$u # Site scores
+speciesPCAmed <- PCA2019$CA$v # Species scores
+
+# In a biplot of a PCA, species' scores are drawn as arrows 
+# that point in the direction of increasing values for that variable
+biplot(PCA2019, 
+       choices = c(1,2), 
+       cex = c(5, 5, 5),
+       xlab = "PC1 (28.7%)", 
+       ylab = "PC2 (13.3%)")
+
+
+  #main = "2019 Plant Community PCA" # biplot of axis 1 vs 2
+
+```
+
+```{r unused/reference code -> DEL when done, echo=FALSE}
+
+#####################################
+# Trying to recreate Table 2 (B-diversity) from B&P per Methods
+#####################################
+# 1. calculate alpha diversity (species density = mean # sp per quadrat)
+# 2. beta diversity is a ratio of total # species divided by species density
+
+#all 1979 data
+d1979
+
+# only species data for community 1a 
+IA1979 <- d1979 %>% 
+  filter(Association_Subtype == "1a") %>% 
+  select(-(Year:Association_Subtype)) 
+
+nrow(IA1979) #15
+
+sp_present <- IA1979[, colSums(IA1979 != 0) > 0]
+
+#####
+# Alpha diversity
+#####
+
+# (#) sp per quadrat = sum up the number of non-zero entries per row (1)
+sp_quad <- apply(IA1979 >0,1,sum)
+#  [1]  6  8 11 10 12 10  8 12 12 11 10 11  6  7 10
+
+sp_1A <- apply(sp_present >0,1, sum)
+
+ncol(sp_present)
+colnames(sp_present) #29
+#  [1] "AGST2"  "ALPL"   "BICE"   "CALY3"  "CAPAP6" "DECE"   "DUAR3"  "ELPA3"  "EQFL"   "FEAR3"  "IMCA"   "LAPA4" 
+# [13] "LEOR"   "LIOC"   "LYSA2"  "MEAR4"  "MIGU"   "OESA"   "PLDID"  "POPA2"  "POPA23" "PUPA3"  "RUOC3"  "SALA2" 
+# [25] "SASI2"  "SCTA2"  "SISU2"  "SYEA2"  "TYLA"  
+
+
+# species density = mean # sp
+mean(sp_quad) #9.6
+
+
+#####
+# Beta diversity: total n species dividied by density
+#####
+
+ncol(sp_present)/mean(sp_quad) #3
+
+
+#######################
+# Analysis of Similarity
+#######################
+#note: ANOSIM is sensitive to inequal compositional variance (see Anderson & Walsh, 2013)
+# these attempts use full years' dataset, not by community
+
+#analysis of similarity between years of observation
+ano_out = anosim(m_com_out, join_40_no_outliers$Year, distance = "bray", permutations = 9999)
+ano_out
+# ANOSIM statistic R: 0.2021
+#       Significance: 1e-04 
+
+#analysis of similarity between community types, combined across all years
+ano_assoc_out = anosim(m_com_out, join_40_no_outliers$Association_Type2, distance = "bray", permutations = 9999)
+ano_assoc_out
+
+# ANOSIM statistic R: 0.351 
+#       Significance: 1e-04 
+
+#######################
+# PERMANOVA
+#######################
+permanova_out = adonis(m_com_out ~ join_40_no_outliers$Year, permutations = 999, method = "bray")
+
+
+#                           Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)    
+# join_40_no_outliers$Year   1     5.828  5.8282  23.221 0.09028  0.001 ***
+# Residuals                234    58.731  0.2510         0.90972           
+# Total                    235    64.560                 1.00000 
+
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Diversity indices
+#from http://benbestphd.com/landscape-ecology-labs/lab8.html#other-diversity-indices
+# see also section 4 from https://www.flutterbys.com.au/stats/tut/tut13.2.html
+
+# Generates index per plot - how to demonstrate for entire community?
+Shannon2019 = diversity(d2019_select, index='shannon')
+Simpson2019 = diversity(d2019_select, index='simpson')
+InvSimpson2019 = diversity(d2019_select, 'inv')
+Rare2019 = rarefy(round(d2019_select), 2) - 1
+Alpha2019 = fisher.alpha(round(d2019_select))
+
+pairs(cbind(Shannon2019, Simpson2019, InvSimpson2019, Rare2019, Alpha2019), pch='+', col='blue')
+
+plot(Simpson2019)
+
+
+######################################################################
+#1979-2019 NMDS comparison (outliers removed);
+
+join_40 <- lst(d1979_grps, d1999_grps, d2019_grps) %>% reduce(full_join) %>% replace(is.na(.), 0)
+nrow(join_40) #238
+
+#After running NMDS, found outliers (code containing outliers in next chunk). 
+##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# two outliers: 2019 sites W_29 and X_43 are outliers on NMDS plot. remove here
+join_40_no_outliers <- join_40[!(join_40$Year == 2019 & join_40$Quadrat == 29) & !(join_40$Year == 2019 & join_40$Quadrat == 43),]
+#nrow(join_40_no_outliers) #236
+  
+
+#head(join_40_no_outliers) #sp data start in 7th col
+
+#rerun NMDS w/ outliers removed. All descriptive text is removed here. 
+com_out = join_40_no_outliers[,7:ncol(join_40_no_outliers)]
+m_com_out = as.matrix(com_out)
+set.seed(123)
+nmds_out = metaMDS(m_com_out, distance = "bray")
+nmds_out
+
+data.scores_out = as.data.frame(scores(nmds_out))
+
+data.scores_out$Year = join_40_no_outliers$Year
+data.scores_out$Association_Type2 = join_40_no_outliers$Association_Type2
+
+Ladner.scores_out <- data.scores_out %>% 
+  mutate(Year = as.character(Year)) %>% 
+           mutate(Association_Type2 = as.character(Association_Type2))
+
+Ladner40yrs_out = ggplot(Ladner.scores_out, aes(x = NMDS1, y = NMDS2)) + 
+    geom_point(size = 5, aes(shape = Association_Type2, colour = Year))+ 
+    theme(axis.text.y = element_text(colour = "black", size = 16, face = "bold"), 
+    axis.text.x = element_text(colour = "black", face = "bold", size = 16), 
+    legend.text = element_text(size = 14, face ="bold", colour ="black"), 
+    legend.position = "right", axis.title.y = element_text(face = "bold", size = 14), 
+    axis.title.x = element_text(face = "bold", size = 16, colour = "black"), 
+    legend.title = element_text(size = 14, colour = "black", face = "bold"), 
+    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill = NA, size = 1.2),
+    legend.key=element_blank()) + 
+    labs(x = "NMDS1", colour = "Year", y = "NMDS2", shape = "Community Association Type")  + 
+    scale_colour_manual(values = c("#4B0082", "#9370DB", "#DDA0DD"))   #+
+    # geom_path(data=df_ell, aes(x=NMDS1, y=NMDS2,colour=Year), size=1, linetype=2) #+
+    # #annotate("text",x=NMDS.mean$MDS1,y=NMDS.mean$MDS2,label=NMDS.mean$Year)
+    # 
+Ladner40yrs_out
+
+```
+
+``` {r maps, echo=FALSE}
+# https://geocompr.robinlovelace.net/adv-map.html#static-maps
+# 
+# install.packages("sf")
+# install.packages("raster")
+# install.packages("spData")
+# install.packages("spDataLarge")
+# install.packages("tmap")
+library(sf)
+library(raster)
+library(spData)
+library(spDataLarge)
+library(tmap)
+
+```
