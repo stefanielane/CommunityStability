@@ -6,9 +6,6 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-# PAT PHD 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 
-
-
 ```
 
 ```{r libraries}
@@ -16,43 +13,65 @@ knitr::opts_chunk$set(echo = TRUE)
 # install.packages("indicspecies")
 # install.packages("dendextend")
 #install.packages("devtools")
+#install.packages("codyn")
 
 library(tidyverse)
 library(vegan)
-library(ape)
+library(codyn)
 library(dplyr)
 library(indicspecies) # indicator species analysis
 library(ggplot2)
 library(dendextend) # dendrogram formatting
-
+library(ape)
+library(kableExtra) # for making tables
 
 #ordination ellipses, see http://kembellab.ca/r-workshop/biodivR/SK_Biodiversity_R.html
 # approx halfway down the page
 ```
 
-```{r 2019 Analysis, echo=FALSE}
-#read data
+```{r Read data, echo=FALSE}
 d2019 <- read.csv("2019_Lane_BINNED-NRCS.csv")
 #view(d2019)
-#nrow(d2019) #74
 
-#filter only plots that fall along the same lengths of transect sampled in 2019 (filter 7 plots)
+d1999 <- read.csv("1999_Denoth_ORIGINAL-NRCS.csv") #first column has a byte order mark
+colnames(d1999)[1] <- gsub('^...','',colnames(d1999)[1])
+#view(d1999)
+
+d1979 <- read.csv("1979_Bradfield_ORIGINAL-NRCS.csv") #first column has a byte order mark
+colnames(d1979)[1] <- gsub('^...','',colnames(d1979)[1])
+#view(d1979)
+
+```
+
+```{r align data across time}
+
+#filter only plots that fall along the same lengths of transect sampled in all years 
 align19 <- filter(d2019, Quadrat > 0)
-nrow(align19) #67
+nrow(align19) #74
+
+align99 <- d1999 %>% filter((between(Quadrat, 9,16)) | (between(Quadrat, 20,32)) | (between(Quadrat, 37,44)) | (between(Quadrat, 46,50)) | (between(Quadrat, 55,69)) | (between(Quadrat, 72,88)) | (between(Quadrat, 93,108)))
+nrow(align99) #82
+
+align79 <- d1979 %>% filter((between(Quadrat, 9,16)) | (between(Quadrat, 20,32)) | (between(Quadrat, 37,44)) | (between(Quadrat, 46,50)) | (between(Quadrat, 55,69)) | (between(Quadrat, 72,88)) | (between(Quadrat, 93,108)))
+nrow(align79) #82
+```
+
+RQ 1: "Are assemblages still characterized by the same dominant species?
+```{r Cluster analysis}
 
 ###########################
-#Cluster Analysis
+# 2019
 ###########################
 
 d2019_select <- select(align19, -(Year:Quadrat))
 ncol(d2019_select) #43 species
 
 d2019_select_all <- select(d2019, -(Year:Quadrat))
-ncol(d2019_select_all)
+#ncol(d2019_select_all)
 
 #name leaves
 d2019_unite <- unite(align19, plot, Quadrat, remove = TRUE, na.rm = FALSE)
-d2019_unite_all <- unite(d2019, plot, Quadrat, remove = TRUE, na.rm = FALSE)
+#d2019_unite_all <- unite(d2019, plot, Quadrat, remove = TRUE, na.rm = FALSE)
 
 rownames(d2019_select) <- d2019_unite$plot
 
@@ -67,12 +86,6 @@ d2019_all <- d2019_select_all %>%
   hclust(method = "ward.D") %>% 
   as.dendrogram()
 
-
-#####################################################
-# fancy dendrogram visualization from https://www.datanovia.com/en/lessons/examples-of-dendrograms-visualization/
-#####################################################
-
-
 #library(dendextend)
 mycols2019 <- c("#0072B2", "#E69F00", "#009E73")
 dend2019 <-  as.dendrogram(d2019_ward) %>%
@@ -86,48 +99,9 @@ dend2019 <-  as.dendrogram(d2019_ward) %>%
 par(cex=2.5, mar=c(2.5,4,2,1))
 plot(dend2019, ylab = "Euclidean Distance", main = "2019")
 
-
 ###########################
-#Indicator species analysis 
+# 1999
 ###########################
-#following https://jkzorz.github.io/2019/07/02/Indicator-species-analysis.html 
-
-#Note: func "IndVal.g" incorporates a correction for unequal group sizes, while "IndVal" does not (p. 10)
-#Note: it was tempting to rename the community types by a plant name, but the IndVal requires a numerical matrix
-
-
-
-d2019_clstrs <- align19 %>% mutate(Association_Type2 = case_when(Quadrat %in% c(84, 15, 79, 78, 57, 80, 105, 16, 76, 77, 82, 58, 59, 100, 101, 99, 102, 56, 98, 97, 14, 42, 63, 41, 48, 49, 85, 108) ~3, Quadrat %in% c(65, 96, 44, 9, 10, 94, 38, 47, 46, 95, 11, 86, 54, 87) ~2, Quadrat %in% c(61, 74, 106, 60, 62, 66, 27, 20, 72, 37, 32, 24, 31, 43, 67, 50, 68, 30, 39, 40, 13, 55, 22, 73, 107) ~1))
-#View(d2019_clstrs)
-#Note: new column must be Association_Type2 to join with other data sets for NMS
-
-#move new column to beginning of df (if left at end, new column Association_Type gets counted in the indicspecies)
-d2019_grps <- d2019_clstrs %>% 
-  select(Association_Type2, everything())
-#view(d2019_grps)
-nrow(d2019_grps) #67
-
-abund = d2019_grps[,8:ncol(d2019_grps)]
-assoc = d2019_grps$Association_Type2
-
-## turn comments off to run - takes a minute
-# inv_r.g = multipatt(abund, assoc, func = "r.g", control = how(nperm=9999))
-# summary(inv_r.g)
-# 1 = Sedge
-# 2 = Fescue
-# 3 = Bogbean
-
-```
-
-```{r 1999 Analysis , echo=FALSE}
-
-d1999 <- read.csv("1999_Denoth_ORIGINAL-NRCS.csv") #first column has a byte order mark
-colnames(d1999)[1] <- gsub('^...','',colnames(d1999)[1])
-#view(d1999)
-
-#filter only plots that fall along the same lengths of transect sampled in 2019
-align99 <- d1999 %>% filter((between(Quadrat, 9,16)) | (between(Quadrat, 20,32)) | (between(Quadrat, 37,44)) | (between(Quadrat, 46,50)) | (between(Quadrat, 55,69)) | (between(Quadrat, 72,88)) | (between(Quadrat, 93,108)))
-nrow(align99) #82
 
 d1999_select <- select(align99, -(Year:Quadrat))
 ncol(d1999_select) #47
@@ -136,11 +110,6 @@ ncol(d1999_select) #47
 d1999_unite <- unite(align99, plot, Quadrat, remove = TRUE, na.rm = FALSE)
 
 rownames(d1999_select) <- d1999_unite$plot
-
-
-###########################
-#Cluster Analysis
-###########################
 
 #cluster - method ward.D does NOT square the dissimilarities. 
 d1999_ward <- d1999_select %>% 
@@ -162,36 +131,8 @@ par(cex=2.5, mar=c(2.5,4,2,1))
 plot(dend1999, ylab = "Euclidean Distance", main = "1999")
 
 ###########################
-#Indicator species analysis 
+# 1979
 ###########################
-#following https://jkzorz.github.io/2019/07/02/Indicator-species-analysis.html 
-d1999_clstrs <- align99 %>% mutate(Association_Type2 = case_when(Quadrat %in% c(39, 40, 31, 29, 30, 27, 26, 28, 32, 69, 22, 46, 23, 24, 87, 88, 94, 73, 72, 108, 85, 42, 44, 41, 43, 96, 95, 97, 12, 100, 101) ~1, Quadrat %in% c(82, 83, 13, 14, 84, 77, 78, 102, 103, 105, 98, 99, 81, 80, 104, 16, 15, 79) ~3, Quadrat %in% c(10, 11, 37, 38, 20, 93, 107, 9, 106, 62, 25, 59, 61, 56, 57, 58, 68, 60, 67, 55, 86, 65, 66, 63, 64, 76, 74, 75, 50, 47, 49, 21, 48) ~2))
-
-#view(d1999_clstrs)
-
-#move new column to beginning of df (if left at end, new column Association_Type gets counted in the indicspecies)
-d1999_grps <- d1999_clstrs %>% 
-  select(Association_Type2, everything())
-#view(d1999_grps)
-
-abund99 = d1999_grps[,5:ncol(d1999_grps)]
-assoc99 = d1999_grps$Association_Type2
-
-## turn comments off to run - takes a minute
-# inv99_r.g = multipatt(abund99, assoc99, func = "r.g", control = how(nperm=9999))
-# summary(inv99_r.g)
-
-
-```
-
-```{r 1979 Analysis , echo=FALSE}
-
-d1979 <- read.csv("1979_Bradfield_ORIGINAL-NRCS.csv") #first column has a byte order mark
-colnames(d1979)[1] <- gsub('^...','',colnames(d1979)[1])
-#view(d1979)
-
-align79 <- d1979 %>% filter((between(Quadrat, 9,16)) | (between(Quadrat, 20,32)) | (between(Quadrat, 37,44)) | (between(Quadrat, 46,50)) | (between(Quadrat, 55,69)) | (between(Quadrat, 72,88)) | (between(Quadrat, 93,108)))
-nrow(align79) #82
 
 d1979_select <- select(align79, -(Year:Association_Subtype))
 #ncol(d1979_select) #55
@@ -202,9 +143,6 @@ d1979_unite <- unite(align79, plot, Quadrat, remove = TRUE, na.rm = FALSE)
 
 rownames(d1979_select) <- d1979_unite$plot
 
-###########################
-#Cluster Analysis
-###########################
 
 d1979_ward <- d1979_select %>% 
   dist(method = "euclidean") %>% 
@@ -225,30 +163,9 @@ par(cex=2.5, mar=c(2.5,4,2,1))
 plot(dend1979, ylab = "Euclidean Distance", main = "1979")
 
 ###########################
-#Indicator species analysis 
+# MULTI-PANEL DENDROGRAM
 ###########################
 
-#following https://jkzorz.github.io/2019/07/02/Indicator-species-analysis.html 
-d1979_clstrs <- align79 %>% mutate(Association_Type2 = case_when(Quadrat %in% c(30, 31, 27, 24, 28, 29, 32, 108, 25, 26, 60, 48, 57, 58, 59, 49, 68, 69, 22, 23, 86, 93, 87, 88, 97, 94, 95, 96, 20, 72, 47, 73, 55, 56) ~1, Quadrat %in% c(80, 81, 64, 62, 65, 82, 83, 98, 84, 85, 78, 79, 63, 66, 50, 99, 100, 61, 67) ~3, Quadrat %in% c(38, 74, 11, 12, 107, 9, 10, 76, 106, 102, 101, 103, 42, 43, 14, 15, 40, 41, 39, 44, 21, 37, 16, 13, 104, 105, 75, 46, 77) ~2))
-#view(d1979_clstrs)
-
-#move new column to beginning of df (if left at end, new column Association_Type gets counted in the indicspecies)
-d1979_grps <- d1979_clstrs %>% 
-  select(Association_Type2, everything())
-#view(d1979_grps)
-
-abund79 = d1979_grps[,7:ncol(d1979_grps)]
-assoc79 = d1979_grps$Association_Type2
-
-## turn comments off to run - takes a minute
-# inv79_r.g = multipatt(abund79, assoc79, func = "r.g", control = how(nperm=9999))
-# summary(inv79_r.g)
-
-
-```
-
-FIGURE 3
-``` {r multi panel dendrograms}
 #install.packages("svglite")
 library(svglite)
 
@@ -264,12 +181,209 @@ legend("bottom", c("Sedge", "Fescue", "Bogbean"),
 plot(dend2019, main = "2019")
 dev.off()
 
+```
 
+```{r indicator species analysis}
+
+#following https://jkzorz.github.io/2019/07/02/Indicator-species-analysis.html 
+
+###########################
+# 2019
+###########################
+
+#Note: func "IndVal.g" incorporates a correction for unequal group sizes, while "IndVal" does not (p. 10)
+#Note: it was tempting to rename the community types by a plant name, but the IndVal requires a numerical matrix
+
+d2019_clstrs <- align19 %>% mutate(Association_Type2 = case_when(Quadrat %in% c(26, 72, 23, 22, 5, 24, 39, 73, 20, 21, 25, 6, 7, 36, 37, 35, 38, 4, 34, 33, 71, 63, 11, 62, 48, 49, 27, 42) ~3, Quadrat %in% c(44, 43, 47, 12, 32, 1, 66, 17, 29, 46, 31, 69, 28, 65, 67, 68, 30, 59) ~2, Quadrat %in% c(19, 40, 74, 8, 10, 13, 9, 54, 50, 15, 55, 41, 70, 2, 52, 57, 53, 56, 64, 3, 16, 51, 58, 14, 18, 45, 60, 61) ~1))
+#View(d2019_clstrs)
+#Note: new column must be Association_Type2 to join with other data sets for NMS
+
+#move new column to beginning of df (if left at end, new column Association_Type gets counted in the indicspecies)
+d2019_grps <- d2019_clstrs %>% 
+  select(Association_Type2, everything())
+#view(d2019_grps)
+nrow(d2019_grps) #74
+
+abund = d2019_grps[,5:ncol(d2019_grps)]
+assoc = d2019_grps$Association_Type2
+
+## turn comments off to run - takes a minute
+inv_r.g = multipatt(abund, assoc, func = "r.g", control = how(nperm=9999))
+summary(inv_r.g)
+# 1 = Sedge
+# 2 = Fescue
+# 3 = Bogbean
+
+###########################
+# 1999 
+###########################
+
+d1999_clstrs <- align99 %>% mutate(Association_Type2 = case_when(Quadrat %in% c(39, 40, 31, 29, 30, 27, 26, 28, 32, 69, 22, 46, 23, 24, 87, 88, 94, 73, 72, 108, 85, 42, 44, 41, 43, 96, 95, 97, 12, 100, 101) ~1, Quadrat %in% c(82, 83, 13, 14, 84, 77, 78, 102, 103, 105, 98, 99, 81, 80, 104, 16, 15, 79) ~3, Quadrat %in% c(10, 11, 37, 38, 20, 93, 107, 9, 106, 62, 25, 59, 61, 56, 57, 58, 68, 60, 67, 55, 86, 65, 66, 63, 64, 76, 74, 75, 50, 47, 49, 21, 48) ~2))
+
+#view(d1999_clstrs)
+
+#move new column to beginning of df (if left at end, new column Association_Type gets counted in the indicspecies)
+d1999_grps <- d1999_clstrs %>% 
+  select(Association_Type2, everything())
+#view(d1999_grps)
+
+abund99 = d1999_grps[,5:ncol(d1999_grps)]
+assoc99 = d1999_grps$Association_Type2
+
+## turn comments off to run - takes a minute
+inv99_r.g = multipatt(abund99, assoc99, func = "r.g", control = how(nperm=9999))
+summary(inv99_r.g)
+
+###########################
+# 1979 
+###########################
+
+d1979_clstrs <- align79 %>% mutate(Association_Type2 = case_when(Quadrat %in% c(30, 31, 27, 24, 28, 29, 32, 108, 25, 26, 60, 48, 57, 58, 59, 49, 68, 69, 22, 23, 86, 93, 87, 88, 97, 94, 95, 96, 20, 72, 47, 73, 55, 56) ~1, Quadrat %in% c(80, 81, 64, 62, 65, 82, 83, 98, 84, 85, 78, 79, 63, 66, 50, 99, 100, 61, 67) ~3, Quadrat %in% c(38, 74, 11, 12, 107, 9, 10, 76, 106, 102, 101, 103, 42, 43, 14, 15, 40, 41, 39, 44, 21, 37, 16, 13, 104, 105, 75, 46, 77) ~2))
+#view(d1979_clstrs)
+
+#move new column to beginning of df (if left at end, new column Association_Type gets counted in the indicspecies)
+d1979_grps <- d1979_clstrs %>% 
+  select(Association_Type2, everything())
+#view(d1979_grps)
+
+abund79 = d1979_grps[,7:ncol(d1979_grps)]
+assoc79 = d1979_grps$Association_Type2
+
+## turn comments off to run - takes a minute
+#inv79_r.g = multipatt(abund79, assoc79, func = "r.g", control = how(nperm=9999))
+summary(inv79_r.g)
+
+```
+
+
+RQ2: "Is diversity stable within and between assemblage types over time?"
+
+```{r community_stability}
+# library(codyn)
+## see https://rdrr.io/cran/codyn/man/community_stability.html
+## see https://cran.r-project.org/web/packages/codyn/vignettes/Temporal_Diversity_Indices.html 
+
+join_40 <- lst(d1979_grps, d1999_grps, d2019_grps) %>% 
+  reduce(full_join) %>% 
+  #replace(is.na(.), 0) %>% 
+  pivot_longer(AGST2:SYSU4, names_to = "Species", values_to = "Cover_class") %>% 
+   mutate(Assemblage = ifelse(Association_Type2 == 1, "Sedge",
+                      ifelse(Association_Type2 == 2, "Fescue", "Bogbean"))) %>% 
+  select(-Transect, -Association_Type2, -Association_Type, -Association_Subtype) %>% 
+  group_by(Year, Assemblage, Species) %>% 
+  summarize(mean_cover = mean(Cover_class, na.rm = TRUE))
+ 
+
+# measure of stability
+cs <- community_stability(join_40, time.var = "Year", abundance.var = "mean_cover", replicate.var = "Assemblage")
+#kable(cs)
+# 
+# Assemblage  stability
+# Bogbean	    7.173355
+# Fescue	    2.521427			
+# Sedge	      5.082942
+
+# test of significance: variance ratio	
+## bootnumber = 1 for faster processing; for final use set higher (eg, 9999)
+res_averagedreplicates <- variance_ratio(join_40,
+               time.var = "Year",
+               species.var = "Species",
+               abundance.var = "mean_cover",
+               bootnumber = 1,
+               replicate = "Assemblage")
+
+res_averagedreplicates <- variance_ratio(join_40,
+               time.var = "Year",
+               species.var = "Species",
+               abundance.var = "mean_cover",
+               bootnumber = 1,
+               replicate = "Assemblage", 
+               average.replicates = "FALSE")
+# Bogbean VR = 1.01
+# Fescue VR = 6.16
+# Sedge VR = 2.39
+## VR = 1 indicates species do not covary; > 1 indicates positive covariance among species. 
+
+
+# See Fig. 3 at https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.12569
+## High variance ratio should indicate low stability, which is reflected in data here. 
+## Bogbean assemblage has highest stability, and lowest VR, while Fescue group has greatest VR and thus lowest stability. Sedge is intermediate
+
+```
+
+
+RQ3: "What is the total community species turnover, and which species gained or lost are driving changes within each assemblage’s diversity?"
+
+```{r turnover}
+# https://rdrr.io/cran/codyn/man/turnover.html
+# uses join_40 from RQ2
+#Note: "Cover_class" is a course abundance value where 0 = absent, 1 = 1-25% cover, 2 = 25-50% cover, etc. Because I want to understand turnover within the assemblage, I average all cover for a given species within that assemblage (across all quadrats)
+
+df_turnover <- join_40 %>% group_by(Year, Assemblage, Species) %>% 
+  summarize(mean_cover = mean(Cover_class, na.rm = TRUE))
+
+ # Calculate relative total turnover within replicates
+total.res <- turnover(df = join_40, 
+                     time.var = "Year", 
+                     species.var = "Species", 
+                     abundance.var = "mean_cover", 
+                     replicate.var = "Assemblage")
+ 
+# Calculate relative species appearances within replicates
+appear.res <- turnover(df=join_40, 
+               time.var = "Year", 
+               species.var = "Species",
+               abundance.var = "mean_cover",  
+               replicate.var="Assemblage", 
+               metric="appearance")
+
+# Calculate relative species disappearances within replicates
+ disappear.res <- turnover(df=join_40, 
+               time.var = "Year", 
+               species.var = "Species",
+               abundance.var = "mean_cover",  
+               replicate.var="Assemblage",
+               metric="disappearance")
+```
+
+```{r rank clock plots}
+# see https://cran.r-project.org/web/packages/codyn/vignettes/Temporal_Diversity_Indices.html 
+#need to select species of interest - use indicator analysis? rare/invasive/foundaitonal?
+## indicator analysis that appear in all 3 years? Poa palustris not in 2019...
+
+clock_bogbean <- join_40 %>% 
+  filter(Assemblage == "Bogbean") %>% 
+  filter(Species %in% c("METR3", "MYSC", "BICE", "LYSA2", "EQFL", "LYTH2", "MEAQ", "JUAR", "ELPA3", "EQVA", "DECE", "GATR3"))
+
+ggplot(clock_bogbean, aes(Year, mean_cover, color = Species)) + 
+  geom_line(size = 2) + coord_polar() + theme_classic() +
+  scale_color_brewer(palette = "Paired")
+
+clock_fescue <- join_40 %>% 
+  filter(Assemblage == "Fescue") %>% 
+  filter(Species %in% c("FEAR", "SALUL", "EQPA", "LAPA4", "SIHE4", "DECE", "POPA2", "TRWO", "BICE", "PHAR3", "EQFL"))
+
+ggplot(clock_fescue, aes(Year, mean_cover, color = Species)) + 
+  geom_line(size = 2) + coord_polar() + theme_classic() +
+  scale_color_brewer(palette = "Paired")
+
+clock_sedge <- join_40 %>% 
+  filter(Assemblage == "Sedge") %>% 
+  filter(Species %in% c("CALY3", "SALA2", "SCTA2", "AGST2", "IMCA"))
+
+ggplot(clock_sedge, aes(Year, mean_cover, color = Species)) + 
+  geom_line(size = 2) + coord_polar() + theme_classic() +
+  scale_color_brewer(palette = "Dark2")
 
 
 ```
 
-FIGURE 4
+
+
+
+
+
+DELETE or archive below this line once final analyses are done
 ```{r NMDS w/ 95% CI, ANOSIM, PERMANOVA}
 
 # largely based on https://stackoverflow.com/questions/13794419/plotting-ordiellipse-function-from-vegan-package-onto-nmds-plot-created-in-ggplo
@@ -278,7 +392,9 @@ FIGURE 4
 # http://kembellab.ca/r-workshop/biodivR/SK_Biodiversity_R.html
 # https://stackoverflow.com/questions/46132682/overlap-percentage-of-nmds-using-metamds-in-vegan-package-in-r
 
-join_40 <- lst(d1979_grps, d1999_grps, d2019_grps) %>% reduce(full_join) %>% replace(is.na(.), 0) %>% select(Elev_AMSL_m:SLL_Quadrat, everything())
+join_40 <- lst(d1979_grps, d1999_grps, d2019_grps) %>% 
+  reduce(full_join) %>% replace(is.na(.), 0) #%>% 
+  #select(Elev_AMSL_m:SLL_Quadrat, everything())
 nrow(join_40) #231
 
 
@@ -355,7 +471,7 @@ LadnerNMDS <- ggplot(Ladner.scores_out, aes(x = NMDS1, y = NMDS2)) +
     geom_path(data=df_ell, aes(x=MDS1, y=MDS2, color = Year), size =2, alpha = 0.7) 
 LadnerNMDS
 
-ggsave("Fig4.svg", width = 10, height = 6, units = "in", device = 'svg')
+#ggsave("Fig_NMDS.svg", width = 10, height = 6, units = "in", device = 'svg')
 
 ################# 
 # NMDS Year only (no assemblage)
@@ -408,7 +524,6 @@ permanova_out = adonis(m_com_out ~ join_40_no_outliers$Year, permutations = 999,
 
 ```
 
-FIGURE 5
 ```{r NMDS, just 2019 w/ enviro loadings}
 # see tutorial https://jkzorz.github.io/2020/04/04/NMDS-extras.html 
 library(vegan)
@@ -485,7 +600,7 @@ plot_2019 = ggplot(NMDS_plot, aes(x = MDS1, y = MDS2)) +
     scale_colour_manual(values = c("#1B7837", "#FDAE61", "#762A83"), labels = c("Sedge", "Fescue", "Bogbean"))  
 plot_2019
 
-ggsave("Fig5.svg")
+#ggsave("2019_NMDS-enviro.svg")
 
 
 # library(RColorBrewer)
@@ -805,8 +920,7 @@ ncol(sp_present_bogbean1999)/mean(sp_plot_bogbean1999) #3.1
 ncol(sp_present_bogbean2019)/mean(sp_plot_bogbean2019) #3.2
 ```
 
-FIGURE 6
-```{r invasive species summaries}
+```{r invasive species stacked bar}
 #https://jkzorz.github.io/2019/06/05/stacked-bar-plots.html
 #https://stackoverflow.com/questions/38452577/making-stack-bar-plot-of-bacterial-abundance
 
@@ -856,8 +970,8 @@ ggplot(Ladner_long, aes(fill=Species_groups, y=Cover, x=Year)) +
     theme(legend.text.align = 0) +
     labs(y="Relative Abundance 
          (proportion of plot cover)", x="Observation Date") 
-#ggsave("Fig6.svg")
-ggsave("Fig6.png")
+#ggsave("Invasive.svg")
+#ggsave("Invasive.png")
 
 
 # Ladner_abund <- Ladner_long %>% 
@@ -873,7 +987,6 @@ ggsave("Fig6.png")
 #https://kembellab.ca/r-workshop/biodivR/SK_Biodiversity_R.html
 
 ```
-
 
 ```{r community proximity to channel}
 
@@ -906,9 +1019,6 @@ tukey_comm # sedge and bogbean are significantly different distances from channe
 
 ```
 
-
-
-Additional analyses, not in manuscript
 ```{r 2019 PCA of community types}
 ###########################
 # PCA
