@@ -9,12 +9,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r libraries}
-# install.packages("ape")
-# install.packages("indicspecies")
-# install.packages("dendextend")
-#install.packages("devtools")
-#install.packages("codyn")
-
 library(tidyverse)
 library(vegan)
 library(codyn)
@@ -255,9 +249,7 @@ summary(inv79_r.g)
 
 ```
 
-
 RQ2: "Is diversity stable within and between assemblage types over time?"
-
 ```{r community_stability}
 # library(codyn)
 ## see https://rdrr.io/cran/codyn/man/community_stability.html
@@ -311,9 +303,7 @@ res_averagedreplicates <- variance_ratio(join_40,
 
 ```
 
-
 RQ3: "What is the total community species turnover, and which species gained or lost are driving changes within each assemblage’s diversity?"
-
 ```{r turnover}
 # https://rdrr.io/cran/codyn/man/turnover.html
 # uses join_40 from RQ2
@@ -328,6 +318,7 @@ total.res <- turnover(df = join_40,
                      species.var = "Species", 
                      abundance.var = "mean_cover", 
                      replicate.var = "Assemblage")
+kable(total.res)
  
 # Calculate relative species appearances within replicates
 appear.res <- turnover(df=join_40, 
@@ -350,35 +341,88 @@ appear.res <- turnover(df=join_40,
 # see https://cran.r-project.org/web/packages/codyn/vignettes/Temporal_Diversity_Indices.html 
 #need to select species of interest - use indicator analysis? rare/invasive/foundaitonal?
 ## indicator analysis that appear in all 3 years? Poa palustris not in 2019...
-
+############################################################################################################
+# all species, but rainbow legend is hard to interpret
+clock_sp <- join_40 %>% 
+   filter(Species %in% c("AGST2", "BICE", "CALY3", "DECE", "ELPA3", "EQFL", "EQPA", "EQVA", "FEAR", 
+                         "GATR3", "IMCA", "JUAR",  "LAPA4", "LYSA2", "LYTH2", "MEAQ", "METR3", "MYSC", 
+                         "PHAR3", "POPA2", "SALA2", "SALUL", "SCTA2", "SIHE4", "TRWO"))
+                         
+ 
+ ggplot(clock_sp, aes(Year, mean_cover, color = Species)) + 
+   geom_line(size = 2) + coord_polar() + theme_classic() +
+   facet_wrap(~Assemblage) 
+ 
+############################################################################################################
+# By assemblage. Clunky, but easier to manipulate legend
+#########################################
+# Bogbean
+#########################################
 clock_bogbean <- join_40 %>% 
-  filter(Assemblage == "Bogbean") %>% 
-  filter(Species %in% c("METR3", "MYSC", "BICE", "LYSA2", "EQFL", "LYTH2", "MEAQ", "JUAR", "ELPA3", "EQVA", "DECE", "GATR3"))
-
+   filter(Assemblage == "Bogbean") %>% 
+   filter(Species %in% c("METR3", "MYSC", "BICE", "LYSA2", "EQFL", "LYTH2", "MEAQ", "JUAR", "ELPA3",  "DECE")) %>% 
+   mutate(Species = recode(Species, "METR3" = "Menyanthes trifoliata", "MYSC" = "Myosotis scorpiodes", "BICE" = "Bidens cernua", "LYSA2" = "Lythrum salicaria", 
+                            "EQFL" = "Equisetum fluviatile", "LYTH2" = "Lysimachia thyrsiflora", "MEAQ" = "Mentha aquatica", "JUAR" = "Juncus articulatus", 
+                           "ELPA3" = "Eleocharis palustris", "DECE" = "Deschampsia caespitosa")) 
+ 
 ggplot(clock_bogbean, aes(Year, mean_cover, color = Species)) + 
-  geom_line(size = 2) + coord_polar() + theme_classic() +
-  scale_color_brewer(palette = "Paired")
+   geom_line(size = 2) + coord_polar() + theme_classic() +
+   theme(text = element_text(size = 34), 
+         legend.text = element_text(face = "italic"), 
+         legend.title=element_blank(), 
+         legend.position="bottom") +
+   guides(colour = guide_legend(nrow = 4)) + 
+   labs(x = "Bogbean", 
+        y = "Cover abundance class (mean)") +
+   scale_color_brewer(palette = "Paired") 
 
+# these species appear in Indicator Analysis, but were removed from figure bc indistinguishable on plot
+# "GATR3", "EQVA",
+
+#########################################
+# Fescue
+#########################################
 clock_fescue <- join_40 %>% 
-  filter(Assemblage == "Fescue") %>% 
-  filter(Species %in% c("FEAR", "SALUL", "EQPA", "LAPA4", "SIHE4", "DECE", "POPA2", "TRWO", "BICE", "PHAR3", "EQFL"))
+   filter(Assemblage == "Fescue") %>% 
+   filter(Species %in% c("FEAR", "SALUL", "EQPA", "LAPA4", "SIHE4", "POPA2", "TRWO", "BICE", "PHAR3", "EQFL", "AGST2")) %>% 
+    mutate(Species = recode(Species, "FEAR" = "Festuca arundinacea", "SALUL" = "Salix lasiandra", "EQPA" = "Equisetum palustre", "LAPA4" = "Lathyrus palustris", 
+                            "SIHE4" = "Sidalcia hendersonii", "POPA2" = "Poa palustris", "TRWO" = "Trifolium wormskjoldii", "BICE" = "Bidens cernua", 
+                            "PHAR3" = "Phalaris arundinacea", "EQFL" = "Equisetum fluviatile", "AGST2" = "Agrostis stolonifera")) 
+ 
+ ggplot(clock_fescue, aes(Year, mean_cover, color = Species)) + 
+   geom_line(size = 2) + coord_polar() + theme_classic() +
+     theme(text = element_text(size = 34), 
+         legend.text = element_text(face = "italic"), 
+         legend.title=element_blank(), 
+         legend.position="bottom") +
+   guides(colour = guide_legend(nrow = 4)) + 
+   labs(x = "Fescue", 
+        y = "Cover abundance class (mean)", 
+        color = "Species") +
+   scale_color_brewer(palette = "Paired")
 
-ggplot(clock_fescue, aes(Year, mean_cover, color = Species)) + 
-  geom_line(size = 2) + coord_polar() + theme_classic() +
-  scale_color_brewer(palette = "Paired")
-
+#########################################
+ # Sedge
+#########################################
 clock_sedge <- join_40 %>% 
-  filter(Assemblage == "Sedge") %>% 
-  filter(Species %in% c("CALY3", "SALA2", "SCTA2", "AGST2", "IMCA"))
+   filter(Assemblage == "Sedge") %>% 
+   filter(Species %in% c("CALY3", "SALA2", "SCTA2", "AGST2", "IMCA")) %>% 
+    mutate(Species = recode(Species, "CALY3" = "Carex lyngbyei", "SALA2" = "Sagittaria latifolia", "SCTA2" = "Schoenoplectus tabernaemontani",
+                           "AGST2" = "Agrostis stolonifera", "IMCA" = "Impatiens capensis"))
 
 ggplot(clock_sedge, aes(Year, mean_cover, color = Species)) + 
-  geom_line(size = 2) + coord_polar() + theme_classic() +
-  scale_color_brewer(palette = "Dark2")
-
+   geom_line(size = 2) + coord_polar() + theme_classic() +
+     theme(text = element_text(size = 34), 
+         legend.text = element_text(face = "italic"), 
+         legend.title=element_blank(), 
+         legend.position="bottom") +
+   guides(colour = guide_legend(nrow = 3)) + 
+   labs(x = "Sedge", 
+        y = "Cover abundance class (mean)", 
+        color = "Species") +
+   scale_color_brewer(palette = "Dark2")
 
 ```
-
-
 
 
 
