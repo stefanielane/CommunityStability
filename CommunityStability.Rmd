@@ -6,6 +6,8 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+#citation("ggplot2")
+
 ```
 
 ```{r libraries}
@@ -41,17 +43,20 @@ colnames(d1979)[1] <- gsub('^...','',colnames(d1979)[1])
 
 #filter only plots that fall along the same lengths of transect sampled in all years 
 align19 <- filter(d2019, Quadrat > 0)
-nrow(align19) #74
+#nrow(align19) #74
 
 align99 <- d1999 %>% filter((between(Quadrat, 9,16)) | (between(Quadrat, 20,32)) | (between(Quadrat, 37,44)) | (between(Quadrat, 46,50)) | (between(Quadrat, 55,69)) | (between(Quadrat, 72,88)) | (between(Quadrat, 93,108)))
-nrow(align99) #82
+#nrow(align99) #82
 
 align79 <- d1979 %>% filter((between(Quadrat, 9,16)) | (between(Quadrat, 20,32)) | (between(Quadrat, 37,44)) | (between(Quadrat, 46,50)) | (between(Quadrat, 55,69)) | (between(Quadrat, 72,88)) | (between(Quadrat, 93,108)))
-nrow(align79) #82
+#nrow(align79) #82
+
+
 ```
 
+
 RQ 1: "Are assemblages still characterized by the same dominant species?
-```{r Cluster analysis}
+```{r Cluster analysis - Euclidean}
 
 ###########################
 # 2019
@@ -59,9 +64,6 @@ RQ 1: "Are assemblages still characterized by the same dominant species?
 
 d2019_select <- select(align19, -(Year:Quadrat))
 ncol(d2019_select) #43 species
-
-d2019_select_all <- select(d2019, -(Year:Quadrat))
-#ncol(d2019_select_all)
 
 #name leaves
 d2019_unite <- unite(align19, plot, Quadrat, remove = TRUE, na.rm = FALSE)
@@ -75,18 +77,14 @@ d2019_ward <- d2019_select %>%
   hclust(method = "ward.D") %>% 
   as.dendrogram()
 
-d2019_all <- d2019_select_all %>% 
-  dist(method = "euclidean") %>% 
-  hclust(method = "ward.D") %>% 
-  as.dendrogram()
-
 #library(dendextend)
 mycols2019 <- c("#0072B2", "#E69F00", "#009E73")
 dend2019 <-  as.dendrogram(d2019_ward) %>%
-   set("branches_lwd", 3) %>% # Branches line width
+   set("branches_lwd", 1) %>% # Branches line width
    set("branches_k_color", mycols2019, k = 3) %>% # Color branches by groups
+   set("labels_col", "white") # mask labels by changing color
    #set("labels_colors", mycols, k = 3) %>%  # Color labels by groups
-   set("labels_cex", 0.5) # Change label size
+   #set("labels_cex", 0.5) # Change label size
 #fviz_dend(dend2) 
 
 #changing font sizes/formatting: https://stackoverflow.com/questions/17232178/change-label-size-of-cluster-dendrogram-in-r-3-01
@@ -114,10 +112,11 @@ d1999_ward <- d1999_select %>%
 #library(dendextend)
 mycols1999 <- c("#009E73", "#0072B2", "#E69F00")
 dend1999 <-  as.dendrogram(d1999_ward) %>%
-   set("branches_lwd", 3) %>% # Branches line width
+   set("branches_lwd", 1) %>% # Branches line width
    set("branches_k_color", mycols1999, k = 3) %>% # Color branches by groups
+   set("labels_col", "white") # mask labels by changing color
    #set("labels_colors", mycols, k = 3) %>%  # Color labels by groups
-   set("labels_cex", 0.5) # Change label size
+   #set("labels_cex", 0.5) # Change label size
 #fviz_dend(dend2) 
 
 #changing font sizes/formatting: https://stackoverflow.com/questions/17232178/change-label-size-of-cluster-dendrogram-in-r-3-01
@@ -146,10 +145,11 @@ d1979_ward <- d1979_select %>%
 #library(dendextend)
 mycols1979 <- c("#009E73", "#0072B2", "#E69F00")
 dend1979 <-  as.dendrogram(d1979_ward) %>%
-   set("branches_lwd", 3) %>% # Branches line width
+   set("branches_lwd", 1) %>% # Branches line width
    set("branches_k_color", mycols1979, k = 3) %>% # Color branches by groups
+    set("labels_col", "white") # mask labels by changing color
    #set("labels_colors", mycols, k = 3) %>%  # Color labels by groups
-   set("labels_cex", 0.5) # Change label size
+   #set("labels_cex", 0.5) # Change label size
 #fviz_dend(dend2) 
 
 #changing font sizes/formatting: https://stackoverflow.com/questions/17232178/change-label-size-of-cluster-dendrogram-in-r-3-01
@@ -177,7 +177,8 @@ dev.off()
 
 ```
 
-```{r indicator species analysis}
+```{r indicator species analysis - Euclidean}
+## see cran vignette for details https://cran.r-project.org/web/packages/indicspecies/vignettes/IndicatorSpeciesAnalysis.html#indicator-species-analysis-using-multipatt 
 
 #following https://jkzorz.github.io/2019/07/02/Indicator-species-analysis.html 
 
@@ -203,10 +204,11 @@ assoc = d2019_grps$Association_Type2
 
 ## turn comments off to run - takes a minute
 inv_r.g = multipatt(abund, assoc, func = "r.g", control = how(nperm=9999))
-summary(inv_r.g)
-# 1 = Sedge
-# 2 = Fescue
-# 3 = Bogbean
+summary(inv_r.g, indvalcomp = TRUE)
+
+## 1 = Sedge
+## 2 = Fescue
+## 3 = Bogbean
 
 ###########################
 # 1999 
@@ -225,8 +227,12 @@ abund99 = d1999_grps[,5:ncol(d1999_grps)]
 assoc99 = d1999_grps$Association_Type2
 
 ## turn comments off to run - takes a minute
-inv99_r.g = multipatt(abund99, assoc99, func = "r.g", control = how(nperm=9999))
-summary(inv99_r.g)
+# inv99_r.g = multipatt(abund99, assoc99, func = "r.g", control = how(nperm=9999))
+# summary(inv99_r.g)
+
+## 1 = Sedge
+## 2 = Fescue
+## 3 = Bogbean
 
 ###########################
 # 1979 
@@ -244,63 +250,494 @@ abund79 = d1979_grps[,7:ncol(d1979_grps)]
 assoc79 = d1979_grps$Association_Type2
 
 ## turn comments off to run - takes a minute
-#inv79_r.g = multipatt(abund79, assoc79, func = "r.g", control = how(nperm=9999))
-summary(inv79_r.g)
+# inv79_r.g = multipatt(abund79, assoc79, func = "r.g", control = how(nperm=9999))
+# summary(inv79_r.g)
+
+## 1 = Sedge
+## 2 = Fescue
+## 3 = Bogbean
 
 ```
 
-RQ2: "Is diversity stable within and between assemblage types over time?"
-```{r community_stability}
-# library(codyn)
-## see https://rdrr.io/cran/codyn/man/community_stability.html
-## see https://cran.r-project.org/web/packages/codyn/vignettes/Temporal_Diversity_Indices.html 
+RQ 1 supplemental - using Bray Curtis 
+```{r Cluster analysis - Bray-Curtis}
+###########################
+# 2019
+###########################
+## Bray-Curtis distances are super tiny in a couple plots if no rounding is specified. This forces the plots with little dissimilarity into their own cluster, overriding k = 3. This can be solved by rounding the distances, as discussed & solved on Stack Overflow https://stackoverflow.com/questions/72282302/specifying-three-cluster-groups-but-dendrogram-clusters-into-four/72298448?noredirect=1#comment127751568_72298448 
 
-join_40 <- lst(d1979_grps, d1999_grps, d2019_grps) %>% 
+#cluster - using object from euclidean chunk
+d2019_bray <- d2019_select %>% 
+  vegdist(method = "bray") %>% 
+  hclust(method = "ward.D") 
+
+d2019_bray$height # view distance values
+diff(round(d2019_bray$height,6))
+
+d2019_bray$height <- round(d2019_bray$height, 6) # specify rounding to eliminate errors from "very small" distances
+d2019_bray <-  as.dendrogram(d2019_bray)
+
+
+
+#hist(d2019_bray)
+  
+braycol19 <- c("#0072B2", "#009E73", "#E69F00")
+dendbray2019 <-  as.dendrogram(d2019_bray) %>%
+   set("branches_lwd", 2) %>% # Branches line width
+   set("branches_k_color", braycol19, k=3) %>% # Color branches by groups
+    set("labels", c()) #remove plot ID labels
+   #set("labels_cex", 0.5) # Change label size
+plot(dendbray2019, ylab = "Bray-Curtis Distance", main = "2019")
+
+
+
+###########################
+# 1999
+###########################
+
+#name leaves as quadrat
+d1999_unite <- unite(align99, plot, Quadrat, remove = TRUE, na.rm = FALSE)
+rownames(d1999_select) <- d1999_unite$plot
+
+#cluster - using object from euclidean chunk
+d1999_bray <- d1999_select %>% 
+  vegdist(method = "bray") %>% 
+  hclust(method = "ward.D") %>% 
+  as.dendrogram()
+
+braycol99 <- c("#0072B2", "#E69F00", "#009E73")
+dendbray1999 <-  as.dendrogram(d1999_bray) %>%
+   set("branches_lwd", 2) %>% # Branches line width
+   set("branches_k_color", braycol99, k = 3) %>% # Color branches by groups
+   set("labels", c()) #remove plot ID labels
+
+plot(dendbray1999, ylab = "Bray-Curtis Distance", main = "1999")
+
+
+###########################
+# 1979
+###########################
+
+#name leaves as quadrat
+d1979_unite <- unite(align79, plot, Quadrat, remove = TRUE, na.rm = FALSE)
+rownames(d1979_select) <- d1979_unite$plot
+
+#cluster - using object from euclidean chunk
+d1979_bray <- d1979_select %>% 
+  vegdist(method = "bray") %>% 
+  hclust(method = "ward.D") %>% 
+  as.dendrogram()
+
+braycol79 <- c("#009E73", "#0072B2", "#E69F00")
+dendbray1979 <-  as.dendrogram(d1979_bray) %>%
+   set("branches_lwd", 2) %>% # Branches line width
+   set("branches_k_color", braycol79, k = 3) %>% # Color branches by groups
+    set("labels", c()) #remove plot ID labels
+
+plot(dendbray1979, ylab = "Bray-Curtis Distance", main = "1979")
+
+
+library(svglite)
+
+svglite("Fig_cluster-bray.svg", width=8, height=5)
+par(mfrow = c(1,3), mar = c(6, 5, 5, 3), xpd = TRUE, mgp=c(1.75, .75,  0))
+plot(dendbray1979, main = "1979")
+mtext(text = "Bray-Curtis Distance", side = 2, line = 3, col = "black")
+plot(dendbray1999, main = "1999")
+legend("bottom", c("Sedge", "Fescue", "Bogbean"),
+        title = "Assemblage Type", horiz = TRUE, inset = c(0, -0.2),
+        col = c("#009E73", "#E69F00", "#0072B2"), pch = rep(15,2),
+        bty = "n", pt.cex = 1.5, text.col = "black")
+plot(dendbray2019, main = "2019")
+dev.off()
+
+
+```
+
+```{r indicator species analysis - Bray-Curtis}
+
+###########################
+# 2019
+###########################
+
+#Note: func "IndVal.g" incorporates a correction for unequal group sizes, while "IndVal" does not (p. 10)
+#Note: it was tempting to rename the community types by a plant name, but the IndVal requires a numerical matrix
+
+bray19_clstrs <- align19 %>% mutate(Association_Type2 = case_when(Quadrat %in% c(26, 72, 71, 22, 25, 4, 34, 36, 37, 33, 35, 38, 73, 39, 20, 21, 5, 24, 11, 23, 62, 63, 8, 10, 9, 6, 7, 54, 40, 74, 13, 14) ~"A", Quadrat %in% c(3, 16, 51, 58, 12, 32, 27, 70, 42, 61, 60, 18, 45, 57, 56, 64, 19, 48, 49, 52, 53, 41, 46, 50, 2, 15, 55) ~"B", Quadrat %in% c(59, 65, 67, 28, 31, 67, 28, 31, 69, 68, 17, 30, 29, 43, 44, 1, 47, 66) ~"C"))
+#View(bray19_clstrs)
+
+#move new column to beginning of df (if left at end, new column Association_Type gets counted in the indicspecies)
+bray19_grps <- bray19_clstrs %>% 
+  select(Association_Type2, everything())
+#view(d2019_grps)
+nrow(bray19_grps) #74
+
+brayabund = bray19_grps[,5:ncol(bray19_grps)]
+brayassoc = bray19_grps$Association_Type2
+
+## turn comments off to run - takes a minute
+bray_inv = multipatt(brayabund, brayassoc, func = "r.g", control = how(nperm=999))
+summary(bray_inv)
+# A = METR3/MEAQ
+# B = CALY3/MEAR4
+# C = PHAR3/FEAR3
+
+###########################
+# 1999
+###########################
+
+bray99_clstrs <- align99 %>% mutate(Association_Type2 = case_when(Quadrat %in% c(63, 64, 65, 66, 61, 56, 57, 48, 47, 68, 49, 50, 82, 83, 84, 81, 80, 104, 99, 98, 105, 13, 14, 77, 78, 16, 15, 79) ~"A", Quadrat %in% c(10, 11, 93, 107, 9, 106, 37, 38, 74, 75, 76) ~"B", Quadrat %in% c(108, 72, 73, 20, 21, 25, 62, 87, 59, 86, 46, 23, 24, 60, 67, 22, 58, 55, 85, 42, 44, 41, 43, 102, 103, 12, 100, 101, 26, 28, 32, 31, 29, 30, 96, 95, 97, 88, 94, 39, 40, 27, 69) ~"C"))
+#View(bray19_clstrs)
+
+#move new column to beginning of df (if left at end, new column Association_Type gets counted in the indicspecies)
+bray99_grps <- bray99_clstrs %>% 
+  select(Association_Type2, everything())
+#view(d2019_grps)
+#nrow(bray99_grps) #82
+
+brayabund99 = bray99_grps[,5:ncol(bray99_grps)]
+brayassoc99 = bray99_grps$Association_Type2
+
+
+## turn comments off to run - takes a minute
+bray_inv99 = multipatt(brayabund99, brayassoc99, func = "r.g", control = how(nperm=999))
+summary(bray_inv99)
+# A = METR3/LEOR/MEAQ
+# B = FEAR3/PHAR3
+# C = CALY3/AGST2
+
+
+###########################
+# 1979
+###########################
+
+bray79_clstrs <- align79 %>% mutate(Association_Type2 = case_when(Quadrat %in% c(30, 31, 24, 28, 32, 27, 29, 108, 25, 26, 97, 94, 95, 96, 86, 93, 87, 88, 47, 73, 20, 72, 21, 22, 23, 98, 99, 55, 56, 60, 58, 59, 49, 68, 69, 48, 57) ~"A", Quadrat %in% c(82, 83, 81, 85, 50, 84, 64, 62, 65, 63, 66, 100, 61, 67, 101, 102, 103, 78, 79, 80, 14, 15, 42, 43) ~"B", Quadrat %in% c(11, 9, 10, 76, 106, 107, 38, 74, 37, 40, 41, 39, 44, 16, 104, 105, 46, 77, 75, 12, 13) ~"C"))
+#View(bray19_clstrs)
+
+#move new column to beginning of df (if left at end, new column Association_Type gets counted in the indicspecies)
+bray79_grps <- bray79_clstrs %>% 
+  select(Association_Type2, everything())
+#view(d2019_grps)
+#nrow(bray99_grps) #82
+
+brayabund79 = bray79_grps[,7:ncol(bray79_grps)]
+brayassoc79 = bray79_grps$Association_Type2
+
+
+## turn comments off to run - takes a minute
+bray_inv79 = multipatt(brayabund79, brayassoc79, func = "r.g", control = how(nperm=999))
+summary(bray_inv79)
+# A = CALY/SALA2/SCTA2
+# B = METR3/MYSC/JUAR
+# C = FEAR3/SALUL
+
+
+
+```
+
+
+RQ2: "Is total species diversity stable within and between assemblage types over time?"
+
+```{r species abundance table}
+
+# exported table as csv, performed percent change calculations and sorted table in Excel
+
+sp_table <- join_40 %>%
+  pivot_wider(names_from = "Year", values_from = "mean_cover") %>%
+  filter_at(vars(`1979`, `1999`, `2019`), any_vars(.>0)) 
+  #mutate(sp_table, PercentChange = ((`2019`-`1979`)/`1979`)*100) 
+  # arrange(factor(desc(PctChange))) %>%
+  # mutate(PctChange = sprintf("%0.2f", PercentChange)) %>%
+  # mutate(PctChange = replace(PctChange, PctChange == "NaN", ""), PctChange = replace(PctChange, PctChange == "Inf", "")) %>%
+  # select(-("PercentChange"))
+sp_table
+
+write.csv(sp_table, "species_table_pct.csv")
+
+```
+
+```{r diversity calculations}
+
+div.join <- lst(d1979_grps, d1999_grps, d2019_grps) %>% 
   reduce(full_join) %>% 
-  #replace(is.na(.), 0) %>% 
-  pivot_longer(AGST2:SYSU4, names_to = "Species", values_to = "Cover_class") %>% 
-   mutate(Assemblage = ifelse(Association_Type2 == 1, "Sedge",
+  replace(is.na(.), 0) %>% 
+  mutate(Assemblage = ifelse(Association_Type2 == 1, "Sedge",
                       ifelse(Association_Type2 == 2, "Fescue", "Bogbean"))) %>% 
-  select(-Transect, -Association_Type2, -Association_Type, -Association_Subtype) %>% 
-  group_by(Year, Assemblage, Species) %>% 
-  summarize(mean_cover = mean(Cover_class, na.rm = TRUE))
- 
+  relocate(Assemblage, .after = Year) %>% 
+  select(-Transect, -Association_Type, -Association_Type2, -Association_Subtype) 
+view(div.join)
 
-# measure of stability
-cs <- community_stability(join_40, time.var = "Year", abundance.var = "mean_cover", replicate.var = "Assemblage")
-#kable(cs)
-# 
-# Assemblage  stability
-# Bogbean	    7.173355
-# Fescue	    2.521427			
-# Sedge	      5.082942
-
-# test of significance: variance ratio	
-## bootnumber = 1 for faster processing; for final use set higher (eg, 9999)
-res_averagedreplicates <- variance_ratio(join_40,
-               time.var = "Year",
-               species.var = "Species",
-               abundance.var = "mean_cover",
-               bootnumber = 1,
-               replicate = "Assemblage")
-
-res_averagedreplicates <- variance_ratio(join_40,
-               time.var = "Year",
-               species.var = "Species",
-               abundance.var = "mean_cover",
-               bootnumber = 1,
-               replicate = "Assemblage", 
-               average.replicates = "FALSE")
-# Bogbean VR = 1.01
-# Fescue VR = 6.16
-# Sedge VR = 2.39
-## VR = 1 indicates species do not covary; > 1 indicates positive covariance among species. 
+# Filter each year; n quadrat = nrow
+div79 <- filter(div.join, Year == "1979") %>% 
+  select(-Assemblage, -Quadrat, -Year)
+nrow(div79) #82
+div99 <- filter(div.join, Year == "1999") %>% 
+  select(-Assemblage, -Quadrat, -Year)
+nrow(div99) #82
+div19 <- filter(div.join, Year == "2019")%>% 
+  select(-Assemblage, -Quadrat, -Year)
+nrow(div19) #74
 
 
-# See Fig. 3 at https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.12569
-## High variance ratio should indicate low stability, which is reflected in data here. 
-## Bogbean assemblage has highest stability, and lowest VR, while Fescue group has greatest VR and thus lowest stability. Sedge is intermediate
+# total number of species = ncol > 0
+sp79 <- div79[, colSums(div79 != 0) > 0]
+ncol(sp79) #48
 
+sp99 <- div99[, colSums(div99 != 0) > 0]
+ncol(sp99) #45
+
+sp19 <- div19[, colSums(div19 != 0) > 0]
+ncol(sp19) #43
+
+##~~~~~~~~~~~~~~~~~~~
+# Alpha diversity
+##~~~~~~~~~~~~~~~~~~~
+
+sp_plot79 <- apply(sp79 >0,1,sum)
+mean(sp_plot79) #9.96
+sd(sp_plot79) #3.41
+
+sp_plot99 <- apply(sp99 >0,1,sum)
+mean(sp_plot99) #9.55
+sd(sp_plot99) #3.30
+
+sp_plot19 <- apply(sp19 >0,1,sum)
+mean(sp_plot19) #8.36
+sd(sp_plot19) #3.03
+
+##~~~~~~~~~~~~~~~~~~~
+# Beta diversity: total n species divided by density
+##~~~~~~~~~~~~~~~~~~~
+
+ncol(sp79)/mean(sp_plot79) #4.82
+ncol(sp99)/mean(sp_plot99) #4.71
+ncol(sp19)/mean(sp_plot19) #5.14
+
+
+
+#########################
+# trying to tidy the process 
+#########################
+
+# https://rdrr.io/rforge/vegan/man/betadiver.html#heading-9
+div <- div.join %>% 
+  select(AGST2:SASI2)
+view(div)
+
+d <- betadiver(div, "w")
+
+range(d - vegdist(div, binary=TRUE))
+
+#div <- div.join %>% 
+#group_by(Year, Assemblage)
+  #summarize_at(vars(count), funs(mean, sd))
+#view(div)
+# Beta diversity: total n species divided by density
+
+  #pivot_longer(AGST2:SYSU4, names_to = "species", values_to = "cover.class") %>% 
+  # %>% 
+  # group_by(Year, Assemblage)
+  #filter(!cover.class == 0) %>% 
+    #dplyr::summarise(b.div = div.join$count/mean)by(Year, Assemblage, Quadrat) %>% 
+  #mutate(count = n())
+
+######################################################################
+## iterative but functional method - delete below here when tidy piped version complete
+######################################################################
+
+#######################
+# Sedge 
+#######################
+
+# select only plots in sedge group
+sedge1979 <- d1979_grps %>% 
+  filter(Association_Type2 == 1) %>% 
+  select(-(Association_Type2:Association_Subtype)) 
+#nrow(sedge1979) #34 plots
+
+sedge1999 <- d1999_grps %>% 
+  filter(Association_Type2 == 1) %>% 
+  select(-(Association_Type2:Quadrat)) 
+#nrow(sedge1999) #31 plots
+
+sedge2019 <- d2019_grps %>% 
+  filter(Association_Type2 == 1) %>% 
+  select(-(Association_Type2:Quadrat)) 
+#nrow(sedge2019) #28
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#select only species present
+sp_present_sedge1979 <- sedge1979[, colSums(sedge1979 != 0) > 0]
+sp_present_sedge1999 <- sedge1999[, colSums(sedge1999 != 0) > 0]
+sp_present_sedge2019 <- sedge2019[, colSums(sedge2019 != 0) > 0]
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ncol = # species present
+ncol(sp_present_sedge1979) #34
+ncol(sp_present_sedge1999) #35
+ncol(sp_present_sedge2019) #34
+
+##~~~~~~~~~~~~~~~~~~~
+# Alpha diversity
+##~~~~~~~~~~~~~~~~~~~
+
+sp_plot_sedge1979 <- apply(sp_present_sedge1979 >0,1,sum)
+#[1]   7  7  7 10  9  8  8  5  7  9  6  5 10  6 14  8 11  7 11 11 15  8 11  8 10 12 10  8 10 11  6  7 10  5
+
+sp_plot_sedge1999 <- apply(sp_present_sedge1999 >0,1,sum)
+#[1]  9  8  8  5 10  7  6 10  8  9  7  7  7  7 11  9  7 10 13  6  8 12  7  8  7  6 10 11 10  8  5
+
+sp_plot_sedge2019 <- apply(sp_present_sedge2019 >0,1,sum)
+#[1]  8 11  9 11  9 11  7  2  5  9  7  9 11  6  8 10 10 12  8  7  3  5 10  5  8
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# species density = mean # sp
+mean(sp_plot_sedge1979) #8.74
+mean(sp_plot_sedge1999) #8.26
+mean(sp_plot_sedge2019) #7.89
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#sd of species density
+sd(sp_plot_sedge1979) #2.45
+sd(sp_plot_sedge1999) #1.98
+sd(sp_plot_sedge2019) #2.69
+
+##~~~~~~~~~~~~~~~~~~~
+# Beta diversity: total n species divided by density
+##~~~~~~~~~~~~~~~~~~~
+
+ncol(sp_present_sedge1979)/mean(sp_plot_sedge1979) #3.89
+ncol(sp_present_sedge1999)/mean(sp_plot_sedge1999) #4.24
+ncol(sp_present_sedge2019)/mean(sp_plot_sedge2019) #4.31
+
+#######################
+# Fescue 
+#######################
+
+fescue1979 <- d1979_grps %>% 
+  filter(Association_Type2 == 2) %>% 
+  select(-(Association_Type2:Quadrat)) 
+#nrow(fescue1979) #29
+
+fescue1999 <- d1999_grps %>% 
+  filter(Association_Type2 == 2) %>% 
+  select(-(Association_Type2:Quadrat)) 
+#nrow(fescue1999) #33
+
+fescue2019 <- d2019_grps %>% 
+  filter(Association_Type2 == 2) %>% 
+  select(-(Association_Type2:Quadrat)) 
+#nrow(fescue2019) #18
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#select only species present
+sp_present_fescue1979 <- fescue1979[, colSums(fescue1979 != 0) > 0]
+sp_present_fescue1999 <- fescue1999[, colSums(fescue1999 != 0) > 0]
+sp_present_fescue2019 <- fescue2019[, colSums(fescue2019 != 0) > 0]
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ncol = # species present
+ncol(sp_present_fescue1979) #47
+ncol(sp_present_fescue1999) #41
+ncol(sp_present_fescue2019) #27
+
+##~~~~~~~~~~~~~~~~~~~
+# Alpha diversity
+##~~~~~~~~~~~~~~~~~~~
+
+sp_plot_fescue1979 <- apply(sp_present_fescue1979 >0,1,sum)
+#[1]   7  7  9 15 13 12 12 17 13  8  7 18 17 11 12 16 18 11  8 11 10 12 14 20 20 17 15 11 11
+sp_plot_fescue1999 <- apply(sp_present_fescue1999 >0,1,sum)
+#[1] 5  6 10  7  9  6  6  5 17 17 14 13 11 16 12 12  7  8 16 12 14  9 10 10 12 15  5  5  6  8  5  5  7
+
+sp_plot_fescue2019 <- apply(sp_present_fescue2019 >0,1,sum)
+#[1] 4 10  7  2  6  7 10 11  7  3  5  8  6  7
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# species density = mean # sp
+mean(sp_plot_fescue1979) #12.83
+mean(sp_plot_fescue1999) #9.69
+mean(sp_plot_fescue2019) #5.83
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#sd of species density
+sd(sp_plot_fescue1979) #3.87
+sd(sp_plot_fescue1999) #3.96
+sd(sp_plot_fescue2019) #2.79
+
+##~~~~~~~~~~~~~~~~~~~
+# Beta diversity: total n species divided by density
+##~~~~~~~~~~~~~~~~~~~
+
+ncol(sp_present_fescue1979)/mean(sp_plot_fescue1979) #3.66
+ncol(sp_present_fescue1999)/mean(sp_plot_fescue1999) #4.23
+ncol(sp_present_fescue2019)/mean(sp_plot_fescue2019) #4.63
+
+#######################
+# Bogbean 
+#######################
+
+bogbean1979 <- d1979_grps %>% 
+  filter(Association_Type2 == 3) %>% 
+  select(-(Association_Type2:Quadrat)) 
+#nrow(bogbean1979) #19
+
+bogbean1999 <- d1999_grps %>% 
+  filter(Association_Type2 == 3) %>% 
+  select(-(Association_Type2:Quadrat)) 
+#nrow(bogbean1999) #18
+
+bogbean2019 <- d2019_grps %>% 
+  filter(Association_Type2 == 3) %>% 
+  select(-(Association_Type2:Quadrat)) 
+#nrow(bogbean2019) #28
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#select only species present
+sp_present_bogbean1979 <- bogbean1979[, colSums(bogbean1979 != 0) > 0]
+sp_present_bogbean1999 <- bogbean1999[, colSums(bogbean1999 != 0) > 0]
+sp_present_bogbean2019 <- bogbean2019[, colSums(bogbean2019 != 0) > 0]
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ncol = # species present
+ncol(sp_present_bogbean1979) #32
+ncol(sp_present_bogbean1999) #36
+ncol(sp_present_bogbean2019) #34
+
+##~~~~~~~~~~~~~~~~~~~
+# Alpha diversity
+##~~~~~~~~~~~~~~~~~~~
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+sp_plot_bogbean1979 <- apply(sp_present_bogbean1979 >0,1,sum)
+#[1]  12 16 12 11  9 17 12 16 18 19 15 15  6  7 11 14 10 10 14
+
+sp_plot_bogbean1999 <- apply(sp_present_bogbean1999 >0,1,sum)
+#[1]  12 14 13 13 14 17 13 10 12 10 12 12 12 10  6  6  7 14
+
+sp_plot_bogbean2019 <- apply(sp_present_bogbean2019 >0,1,sum)
+#[1]  10 11  8 11 12 11 11 10 10  7 12 11  9 14 12  9 10  7 11 14 11 12  9 11  6 11 12 11
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# species density = mean # sp
+mean(sp_plot_bogbean1979) #12.84
+mean(sp_plot_bogbean1999) #11.50
+mean(sp_plot_bogbean2019) #10.46
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#sd of species density
+sd(sp_plot_bogbean1979) #3.61
+sd(sp_plot_bogbean1999) #2.92
+sd(sp_plot_bogbean2019) #1.90
+
+##~~~~~~~~~~~~~~~~~~~
+# Beta diversity: total n species divided by density
+##~~~~~~~~~~~~~~~~~~~
+
+ncol(sp_present_bogbean1979)/mean(sp_plot_bogbean1979) #2.49
+ncol(sp_present_bogbean1999)/mean(sp_plot_bogbean1999) #3.13
+ncol(sp_present_bogbean2019)/mean(sp_plot_bogbean2019) #3.25
 ```
 
 RQ3: "What is the total community species turnover, and which species gained or lost are driving changes within each assemblage’s diversity?"
@@ -309,8 +746,8 @@ RQ3: "What is the total community species turnover, and which species gained or 
 # uses join_40 from RQ2
 #Note: "Cover_class" is a course abundance value where 0 = absent, 1 = 1-25% cover, 2 = 25-50% cover, etc. Because I want to understand turnover within the assemblage, I average all cover for a given species within that assemblage (across all quadrats)
 
-df_turnover <- join_40 %>% group_by(Year, Assemblage, Species) %>% 
-  summarize(mean_cover = mean(Cover_class, na.rm = TRUE))
+# df_turnover <- join_40 %>% group_by(Year, Assemblage, Species) %>% 
+#   summarize(mean_cover = mean(Cover_class, na.rm = TRUE))
 
  # Calculate relative total turnover within replicates
 total.res <- turnover(df = join_40, 
@@ -335,71 +772,111 @@ appear.res <- turnover(df=join_40,
                abundance.var = "mean_cover",  
                replicate.var="Assemblage",
                metric="disappearance")
+
+ turnover <- total.res %>% 
+            left_join(appear.res, by = c("Assemblage", "Year")) %>% 
+            left_join(disappear.res, by = c("Assemblage", "Year")) 
+ 
+ turnover <- turnover[, c("Assemblage", "Year", "appearance", "disappearance", "total")]
+ 
+kable(turnover, align = "c", booktabs = TRUE) %>%
+   row_spec(1:6, color = 'black') %>%
+   kable_styling(font_size = 18, latex_options = "scale_down") %>%
+    save_kable("turnover.jpeg")
+ 
+
+ 
 ```
 
 ```{r rank clock plots}
+library(wesanderson)
+
 # see https://cran.r-project.org/web/packages/codyn/vignettes/Temporal_Diversity_Indices.html 
 #need to select species of interest - use indicator analysis? rare/invasive/foundaitonal?
 ## indicator analysis that appear in all 3 years? Poa palustris not in 2019...
 ############################################################################################################
 # all species, but rainbow legend is hard to interpret
 clock_sp <- join_40 %>% 
-   filter(Species %in% c("AGST2", "BICE", "CALY3", "DECE", "ELPA3", "EQFL", "EQPA", "EQVA", "FEAR", 
+   filter(Species %in% c("AGST2", "BICE", "CALY3", "DECE", "ELPA3", "EQFL", "EQPA", "EQVA", "FEAR3", 
                          "GATR3", "IMCA", "JUAR",  "LAPA4", "LYSA2", "LYTH2", "MEAQ", "METR3", "MYSC", 
                          "PHAR3", "POPA2", "SALA2", "SALUL", "SCTA2", "SIHE4", "TRWO"))
                          
  
- ggplot(clock_sp, aes(Year, mean_cover, color = Species)) + 
-   geom_line(size = 2) + coord_polar() + theme_classic() +
-   facet_wrap(~Assemblage) 
+# ggplot(clock_sp, aes(Year, mean_cover, color = Species)) + 
+#    geom_line(size = 2) + coord_polar() + theme_classic() +
+#    facet_wrap(~Assemblage) 
  
+ 
+ # select only 2 most significant species from each year
+# clock_select_sp <- join_40 %>% 
+#    filter(Species %in% c("CALY3", "SALA2", "AGST2", "FEAR3", "SALUL", "POPA2", "MEAQ", "METR3", "MYSC", "PHAR3"))
+#             
+# ggplot(clock_select_sp, aes(Year, mean_cover, color = Species)) + 
+#    geom_line(size = 2) + coord_polar() + theme_classic() +
+#    facet_wrap(~Assemblage) + 
+#    labs(x = "", 
+#         y = "Cover abundance class (mean)")
 ############################################################################################################
-# By assemblage. Clunky, but easier to manipulate legend
+# By assemblage. Clunky, but easier to manipulate legend and read
+ #Note: Species shown are the two most significant from the indicator species analysis. 
 #########################################
 # Bogbean
 #########################################
+
 clock_bogbean <- join_40 %>% 
    filter(Assemblage == "Bogbean") %>% 
    filter(Species %in% c("METR3", "MYSC", "BICE", "LYSA2", "EQFL", "LYTH2", "MEAQ", "JUAR", "ELPA3",  "DECE")) %>% 
    mutate(Species = recode(Species, "METR3" = "Menyanthes trifoliata", "MYSC" = "Myosotis scorpiodes", "BICE" = "Bidens cernua", "LYSA2" = "Lythrum salicaria", 
                             "EQFL" = "Equisetum fluviatile", "LYTH2" = "Lysimachia thyrsiflora", "MEAQ" = "Mentha aquatica", "JUAR" = "Juncus articulatus", 
                            "ELPA3" = "Eleocharis palustris", "DECE" = "Deschampsia caespitosa")) 
+
+# select only three most significant species per year
+clock_bogbean_select <- join_40 %>% 
+   filter(Assemblage == "Bogbean") %>% 
+   filter(Species %in% c("METR3", "MYSC", "MEAQ", "BICE", "LYSA2", "LYTH2")) %>% 
+   mutate(Species = recode(Species, "METR3" = "Menyanthes trifoliata", "MYSC" = "Myosotis scorpiodes", "MEAQ" = "Mentha aquatica", "BICE" = "Bidens cernua", "LYSA2" = "Lythrum salicaria", "LYTH2" = "Lysimachia thyrsiflora"))
  
-ggplot(clock_bogbean, aes(Year, mean_cover, color = Species)) + 
+bogbean.clock <- ggplot(clock_bogbean_select, aes(Year, mean_cover, color = Species)) + 
    geom_line(size = 2) + coord_polar() + theme_classic() +
-   theme(text = element_text(size = 34), 
+   theme(text = element_text(size = 18), 
+         #axis.text.x=element_blank(), # remove all x axis labels in polar_coord
+         #axis.text.x=element_text(angle = 25),
          legend.text = element_text(face = "italic"), 
          legend.title=element_blank(), 
-         legend.position="bottom") +
-   guides(colour = guide_legend(nrow = 4)) + 
-   labs(x = "Bogbean", 
-        y = "Cover abundance class (mean)") +
-   scale_color_brewer(palette = "Paired") 
+         legend.position="right") +
+   #guides(colour = guide_legend(nrow = 3)) + 
+  #geom_text(aes(x = Year + 0.5,label = Year)) +
+  scale_x_continuous(breaks=c(1981, 1999, 2018), labels = c(1979, 1999, 2019)) +
+  #guides(x = guide_axis(angle = 90)) +
+  #guides(x = guide_axis(n.dodge = 5)) +
+  labs(x = "Bogbean", y = "") +
+   scale_color_brewer(palette = "Dark2")
+bogbean.clock
 
-# these species appear in Indicator Analysis, but were removed from figure bc indistinguishable on plot
-# "GATR3", "EQVA",
+
 
 #########################################
 # Fescue
 #########################################
+# elected to keep top two indicator species for visualization due to greatest changes observed
+
 clock_fescue <- join_40 %>% 
    filter(Assemblage == "Fescue") %>% 
-   filter(Species %in% c("FEAR", "SALUL", "EQPA", "LAPA4", "SIHE4", "POPA2", "TRWO", "BICE", "PHAR3", "EQFL", "AGST2")) %>% 
-    mutate(Species = recode(Species, "FEAR" = "Festuca arundinacea", "SALUL" = "Salix lasiandra", "EQPA" = "Equisetum palustre", "LAPA4" = "Lathyrus palustris", 
-                            "SIHE4" = "Sidalcia hendersonii", "POPA2" = "Poa palustris", "TRWO" = "Trifolium wormskjoldii", "BICE" = "Bidens cernua", 
-                            "PHAR3" = "Phalaris arundinacea", "EQFL" = "Equisetum fluviatile", "AGST2" = "Agrostis stolonifera")) 
- 
- ggplot(clock_fescue, aes(Year, mean_cover, color = Species)) + 
+   filter(Species %in% c("FEAR3", "SALUL",  "SIHE4", "POPA2", "PHAR3",  "AGST2")) %>% 
+    mutate(Species = recode(Species, "FEAR3" = "Festuca arundinacea", "SALUL" = "Salix lasiandra",  "SIHE4" = "Sidalcia hendersonii", "POPA2" = "Poa palustris", "PHAR3" = "Phalaris arundinacea", "AGST2" = "Agrostis stolonifera")) 
+
+fescue.clock <- ggplot(clock_fescue, aes(Year, mean_cover, color = Species)) + 
    geom_line(size = 2) + coord_polar() + theme_classic() +
-     theme(text = element_text(size = 34), 
+     theme(text = element_text(size = 18), 
          legend.text = element_text(face = "italic"), 
          legend.title=element_blank(), 
-         legend.position="bottom") +
-   guides(colour = guide_legend(nrow = 4)) + 
-   labs(x = "Fescue", 
-        y = "Cover abundance class (mean)", 
+         legend.position="right") +
+   #guides(colour = guide_legend(nrow = 3)) + 
+  scale_x_continuous(breaks=c(1981, 1999, 2018), labels = c(1979, 1999, 2019)) +
+  labs(x = "Fescue", 
+        y = "", 
         color = "Species") +
-   scale_color_brewer(palette = "Paired")
+   scale_color_brewer(palette = "Set2")
 
 #########################################
  # Sedge
@@ -410,22 +887,1159 @@ clock_sedge <- join_40 %>%
     mutate(Species = recode(Species, "CALY3" = "Carex lyngbyei", "SALA2" = "Sagittaria latifolia", "SCTA2" = "Schoenoplectus tabernaemontani",
                            "AGST2" = "Agrostis stolonifera", "IMCA" = "Impatiens capensis"))
 
-ggplot(clock_sedge, aes(Year, mean_cover, color = Species)) + 
+sedge.clock<- ggplot(clock_sedge, aes(Year, mean_cover, color = Species)) + 
    geom_line(size = 2) + coord_polar() + theme_classic() +
-     theme(text = element_text(size = 34), 
+     theme(text = element_text(size = 18), 
          legend.text = element_text(face = "italic"), 
          legend.title=element_blank(), 
-         legend.position="bottom") +
-   guides(colour = guide_legend(nrow = 3)) + 
-   labs(x = "Sedge", 
-        y = "Cover abundance class (mean)", 
+         legend.position="right") +
+   #guides(colour = guide_legend(nrow = 3)) + 
+  scale_x_continuous(breaks=c(1981, 1999, 2018), labels = c(1979, 1999, 2019)) +
+    labs(x = "Sedge", 
+        y = "", 
         color = "Species") +
-   scale_color_brewer(palette = "Dark2")
+   scale_color_manual(values = wes_palette("Moonrise3"))
+
+## panel format w/ ggpubr
+library(ggpubr)
+clock.panel <- ggarrange(sedge.clock, fescue.clock, bogbean.clock,
+          ncol = 1, nrow = 3, align = "hv") 
+clock.panel
+
+clock.ann <- annotate_figure(clock.panel, left = text_grob("Cover abundance class (mean)", size = 20, rot = 90, hjust = .5, vjust = 1))
+clock.ann
+
+ggsave("fig-clock-panel.jpg", clock.ann, width = 12, height = 16)
+
+```
+
+```{r summary tables}
+## Want: table with Assemblage, year, N plots and N species per assemblage
+
+# Year    Sedge                     Bogbean             Fescue
+#         N plot N species    N plot N species    N plot N species
+# 1979    x         y
+# 1999
+#2019
+
+join_summary <- lst(d1979_grps, d1999_grps, d2019_grps) %>% 
+  reduce(full_join) %>% 
+  replace(is.na(.), 0) %>% 
+  pivot_longer(AGST2:SYSU4, names_to = "Species", values_to = "Cover_class") %>% 
+   mutate(Assemblage = ifelse(Association_Type2 == 1, "Sedge",
+                      ifelse(Association_Type2 == 2, "Fescue", "Bogbean"))) %>% 
+  select(-Transect, -Association_Type2, -Association_Type, -Association_Subtype) 
+
+
+N_plots_sp <- join_summary %>% 
+  group_by(Year) %>% 
+  summarise(Assemblage = n(), 
+    N_plots = sum(Quadrat), 
+    N_sp = sum(Species))
+
+
+
+
+
+
+## Want: table of species, cover class, and % change per time point (?)
+
+#           Mean cover class
+# Species   1979      1999      2019      % change since 1979
+# A         3           2         1           -50%
+# B
+# C 
+
+
 
 ```
 
 
+Additional analyses
 
+Supplemental: effect of dropping plots on spatial autocorrelation to diversity metircs
+
+```{r bootstrap 10 plots - 2019}
+#start with diversity groupings as determined by each year's cluster analysis & indicator species analysis: d2019_grps, d1999_grps, d1979_grps
+# Sub sample 10 trials using 10 plots from each sub assemblage. 
+
+grps.19 <-  d2019_grps %>% 
+  mutate(Assemblage = ifelse(Association_Type2 == 1, "sedge",
+                      ifelse(Association_Type2 == 2, "fescue", "bogbean"))) %>% 
+  relocate(Assemblage, .after = Year) %>% 
+  select(-Transect, -Association_Type2) 
+
+# select 10 random plots from each assemblage type & calculate diversity components
+
+##~~~~~~~~~~~
+# Sedge
+##~~~~~~~~~~~
+sedge.19 <- grps.19 %>% 
+  filter(Assemblage == "sedge") %>% 
+  select(-Assemblage, -Year)
+
+#select 10 random plots
+rando.sedge19 <- sedge.19[sample(nrow(sedge.19), 10), ]
+unique(rando.sedge19$Quadrat)
+
+# Trial 1 = c(57, 60, 45,  3, 50, 18, 53, 56, 55, 64)
+# Trial 2 = c(13, 10,  8, 15, 52,  2, 70,  3,  9, 41)
+# Trial 3 = c(60, 41, 55, 52, 50, 40, 57, 51, 70, 64)
+# Trial 4 = c(40, 10, 58, 61, 51,  2, 56,  8, 41, 16)
+# Trial 5 = c(16, 56, 54,  3, 18,  9, 53, 55, 52, 14)
+# Trial 6 = c(70, 50, 19, 55, 18, 16, 56, 52, 61, 14)
+# Trial 7 = c(3, 51, 18, 74, 15, 19, 53,  2, 13,  9)
+# Trial 8 = c(16,  8, 40, 54, 14,  3, 60, 61, 56, 19)
+# Trial 9 = c(58, 57, 16, 56, 13, 53, 70, 52, 60,  9)
+# Trial 10 = c(64, 14, 74, 45,  9, 2, 10, 40, 60, 58)
+
+
+r.sedge19 <- rando.sedge19 %>% 
+  select(-Quadrat)
+
+# total number of species = ncol > 0
+sp.sedge.19 <- r.sedge19[, colSums(r.sedge19 != 0) > 0]
+ncol(sp.sedge.19) 
+# Trial 1 = 21
+# Trial 2 = 27
+# Trial 3 = 26
+# Trial 4 = 24
+# Trial 5 = 27
+# Trial 6 = 29
+# Trial 7 = 23
+# Trial 8 = 27
+# Trial 9 = 25
+# Trial 10 = 24
+
+
+# alpha diversity
+pa.sedge.19 <- apply(sp.sedge.19 >0,1,sum) # convert cover value to presence/absence
+mean(pa.sedge.19) 
+#Trial 1 = 7.2
+# Trial 2 = 8.4
+# Trial 3 = 7.8
+# Trial 4 = 7.5
+# Trial 5 = 7.9
+# Trial 6 = 8.4
+# Trial 7 = 7.8
+# Trial 8 = 7.7
+# Trial 9 = 6.9
+# Trial 10 = 7.5
+
+
+
+sd(pa.sedge.19) 
+#Trial 1 = 2.90
+# Trial 2 = 2.01
+# Trial 3 = 2.35
+# Trial 4 = 3.10
+# Trial 5 = 3.25
+# Trial 6 = 3.03
+# Trial 7 = 2.25
+# Trial 8 = 3.13
+# Trial 9 = 2.69
+# Trial 10 = 2.95
+
+
+# beta diversity
+ncol(sp.sedge.19)/mean(pa.sedge.19) 
+# Trial 1 = 2.92
+# Trial 2 = 3.21
+# Trial 3 = 3.33
+# Trial 4 = 3.2
+# Trial 5 = 3.42
+# Trial 6 = 3.45
+# Trial 7 = 2.95
+# Trial 8 = 3.51
+# Trial 9 = 3.62
+# Trial 10 = 3.2
+
+
+##~~~~~~~~~~~
+# Fescue
+##~~~~~~~~~~~
+
+fescue.19 <- grps.19 %>% 
+  filter(Assemblage == "fescue") %>% 
+  select(-Assemblage, -Year)
+
+#select 10 random plots
+rando.fescue19 <- fescue.19[sample(nrow(fescue.19), 10), ]
+unique(rando.fescue19$Quadrat)
+
+# Trial 1 = c(28, 68, 65, 66,  1, 29, 43, 31, 69, 44)
+# Trial 2 = c(32, 68, 66, 17, 28, 31, 30, 65, 44,  1)
+# Trial 3 = c(69,  1, 31, 68, 44, 12, 43, 67, 66, 17)
+# Trial 4 = c(68, 12, 17, 29, 59,  1, 31, 67, 43, 69)
+# Trial 5 = c(12, 32, 69, 17, 31, 65, 44, 30, 67, 46)
+# Trial 6 = c(32, 44, 30, 67, 66, 43,  1, 47, 69, 29)
+# Trial 7 = c(44, 28, 30, 31, 46, 17, 12, 59, 65,  1)
+# Trial 8 = c(29, 32, 67, 59, 31, 46, 12, 44, 66, 47)
+# Trial 9 = c(31, 30, 29, 32, 66, 43, 46, 12, 67, 28)
+# Trial 10 = c(17, 68, 44,  1, 59, 31, 29, 12, 30, 65)
+
+
+r.fescue19 <- rando.fescue19 %>% 
+  select(-Quadrat)
+
+# total number of species = ncol > 0
+sp.fescue.19 <- r.fescue19[, colSums(r.fescue19 != 0) > 0]
+ncol(sp.fescue.19) 
+# Trial 1 = 17
+# Trial 2 = 20
+# Trial 3 = 22
+# Trial 4 = 21
+# Trial 5 = 23
+# Trial 6 = 19
+# Trial 7 = 23
+# Trial 8 = 25
+# Trial 9 = 24
+# Trial 10 = 23
+
+
+
+# alpha diversity
+pa.fescue.19 <- apply(sp.fescue.19 >0,1,sum) # convert cover value to presence/absence
+mean(pa.fescue.19) 
+# Trial 1 = 4.7
+# Trial 2 = 5.5
+# Trial 3 = 5.4
+# Trial 4 = 5.2
+# Trial 5 = 7.0
+# Trial 6 = 5.3
+# Trial 7 = 5.9
+# Trial 8 = 6.5
+# Trial 9 = 6.7
+# Trial 10 = 4.9
+
+
+
+sd(pa.fescue.19) 
+# Trial 1 = 2.00 
+# Trial 2 = 2.17
+# Trial 3 = 2.59
+# Trial 4 = 2.78
+# Trial 5 = 2.83
+# Trial 6 = 2.71
+# Trial 7 = 2.88
+# Trial 8 = 3.31
+# Trial 9 = 3.23
+# Trial 10 = 2.42
+
+
+# beta diversity
+ncol(sp.fescue.19)/mean(pa.fescue.19) 
+# Trial 1 = 3.62
+# Trial 2 = 3.64
+# Trial 3 = 4.07
+# Trial 4 = 4.04
+# Trial 5 = 3.29
+# Trial 6 = 3.58
+# Trial 7 = 3.90
+# Trial 8 = 3.85
+# Trial 9 = 3.58
+# Trial 10 = 4.69
+
+
+##~~~~~~~~~~~
+# Bogbean
+##~~~~~~~~~~~
+
+
+bogbean.19 <- grps.19 %>% 
+  filter(Assemblage == "bogbean") %>% 
+  select(-Assemblage, -Year)
+
+#select 10 random plots
+rando.bogbean19 <- bogbean.19[sample(nrow(bogbean.19), 10), ]
+unique(rando.bogbean19$Quadrat)
+
+# Trial 1 = c(39,  6, 38,  4, 72, 25, 20, 35, 11,  7)
+# Trial 2 = c(72,  4, 38, 48, 49, 21, 20, 71, 35, 23)
+# Trial 3 = c(11, 37, 71, 42, 27, 24, 20, 21, 35, 63)
+# Trial 4 = c(49, 23, 71, 38, 34,  5, 26, 22,  7, 42)
+# Trial 5 = c(71, 24, 39, 21, 42, 26, 23,  5, 49, 20)
+# Trial 6 = c(23, 49, 42,  4, 48,  6, 63, 72, 71, 39)
+# Trial 7 = c(33, 26, 11, 49,  6, 23, 73, 42, 71, 63)
+# Trial 8 = c(25,  5, 20,  4, 39, 62, 34, 23, 63, 49)
+# Trial 9 = c(34, 36, 38, 35, 26, 71, 37,  5, 23, 39)
+# Trial 10 = c(22, 24,  5, 63, 33, 11, 37, 21, 48, 34)
+
+
+
+r.bogbean19 <- rando.bogbean19 %>% 
+  select(-Quadrat)
+
+# total number of species = ncol > 0
+sp.bogbean.19 <- r.bogbean19[, colSums(r.bogbean19 != 0) > 0]
+ncol(sp.bogbean.19) 
+# Trial 1 = 24 
+# Trial 2 = 23
+# Trial 3 = 22
+# Trial 4 = 27
+# Trial 5 = 24
+# Trial 6 = 27
+# Trial 7 = 27
+# Trial 8 = 28
+# Trial 9 = 26
+# Trial 10 = 29
+
+
+
+# alpha diversity
+pa.bogbean.19 <- apply(sp.bogbean.19 >0,1,sum) # convert cover value to presence/absence
+mean(pa.bogbean.19) 
+#Trial 1 = 11.00 
+# Trial 2 = 10.6
+# Trial 3 = 9.4
+# Trial 4 = 10.7
+# Trial 5 = 10.6
+# Trial 6 = 10.3
+# Trial 7 = 10.3
+# Trial 8 = 10.6
+# Trial 9 = 10.6
+# Trial 10 = 10.2
+
+
+sd(pa.bogbean.19) 
+#Trial 1 = 1.70 
+# Trial 2 = 1.07
+# Trial 3 = 2.12
+# Trial 4 = 0.82
+# Trial 5 = 1.78
+# Trial 6 = 2.26
+# Trial 7 = 2.21
+# Trial 8 = 2.12
+# Trial 9 = 1.84
+# Trial 10 = 2.66
+
+
+# beta diversity
+ncol(sp.bogbean.19)/mean(pa.bogbean.19) 
+# Trial 1 = 2.18
+# Trial 2 = 2.17
+# Trial 3 = 2.34
+# Trial 4 = 2.52
+# Trial 5 = 2.26
+# Trial 6 = 2.62
+# Trial 7 = 2.62
+# Trial 8 = 2.64
+# Trial 9 = 2.45
+# Trial 10 = 2.84
+
+
+##~~~~~~~~~~~
+# Total
+##~~~~~~~~~~~
+
+rando.19 <- lst(rando.sedge19, rando.fescue19, rando.bogbean19) %>% 
+  reduce(full_join) %>% 
+  replace(is.na(.), 0) %>% 
+  select(-Quadrat)
+
+# total number of species = ncol > 0
+sp.rand.19 <- rando.19[, colSums(rando.19 != 0) > 0]
+ncol(sp.rand.19) 
+# Trial 1 = 35 
+# Trial 2 = 36
+# Trial 3 = 37
+# Trial 4 = 36
+# Trial 5 = 37
+# Trial 6 = 38
+# Trial 7 = 38
+# Trial 8 = 40
+# Trial 9 = 36
+# Trial 10 = 40
+
+
+
+# alpha diversity
+pa.19 <- apply(sp.rand.19 >0,1,sum) # convert cover value to presence/absence
+mean(pa.19) 
+#Trial 1 = 7.63 
+# Trial 2 = 8.12
+# Trial 3 = 7.53
+# Trial 4 = 7.8
+# Trial 5 = 8.5
+# Trial 6 = 8.0
+# Trial 7 = 8.0
+# Trial 8 = 8.27
+# Trial 9 = 8.07
+# Trial 10 = 7.53
+
+
+
+sd(pa.19) 
+#Trial 1 = 3.42 
+# Trial 2 = 2.76
+# Trial 3 = 2.83
+# Trial 4 = 3.29
+# Trial 5 = 3.03
+# Trial 6 = 3.33
+# Trial 7 = 3.01
+# Trial 8 = 3.30
+# Trial 9 = 3.14
+# Trial 10 = 3.40
+
+
+# beta diversity
+ncol(sp.rand.19)/mean(pa.19) 
+#Trial 1 = 4.58 
+# Trial 2 = 4.41
+# Trial 3 = 4.91
+# Trial 4 = 4.61
+# Trial 5 = 4.35
+# Trial 6 = 4.75
+# Trial 7 = 4.75
+# Trial 8 = 4.84
+# Trial 9 = 4.46
+# Trial 10 = 5.31
+
+
+```
+
+```{r bootstrap 10 plots - 1999}
+#start with diversity groupings as determined by each year's cluster analysis & indicator species analysis: d2019_grps, d1999_grps, d1979_grps
+# Sub sample 10 trials using 10 plots from each sub assemblage. 
+
+grps.99 <-  d1999_grps %>%
+  mutate(Assemblage = ifelse(Association_Type2 == 1, "sedge",
+                      ifelse(Association_Type2 == 2, "fescue", "bogbean"))) %>%
+  relocate(Assemblage, .after = Year) %>%
+  select(-Transect, -Association_Type2)
+
+
+# select 10 random plots from each assemblage type & calculate diversity components
+
+##~~~~~~~~~~~
+# Sedge
+##~~~~~~~~~~~
+sedge.99 <- grps.99 %>% 
+  filter(Assemblage == "sedge") %>% 
+  select(-Assemblage, -Year)
+
+#select 10 random plots
+rando.sedge99 <- sedge.99[sample(nrow(sedge.99), 10), ]
+unique(rando.sedge99$Quadrat)
+# Trial 1 = c(85,  73,  29,  39,  42,  31,  87,  23,  28, 100)
+# Trial 2 = c(24,  27,  41,  88,  87,  42,  39,  94, 101, 100)
+# Trial 3 = c(31, 12, 41, 30, 96, 72, 26, 69, 73, 44)
+# Trial 4 = c(32,  72,  29,  40, 101,  46, 31,  24,  43,  88)
+# Trial 5 = c(24, 28, 85, 46, 43, 29, 32, 73, 30, 95)
+# Trial 6 = c(42,  44,  69,  40,  31,  43,  72,  27,  26, 108)
+# Trial 7 = c(40,  12, 100,  87,  23,  73,  43,  95,  88,  32)
+# Trial 8 = c(96,  31, 108, 24, 100,  85,  22 , 46,  40,  32)
+# Trial 9 = c(96, 39, 30, 22, 27, 69, 40, 44, 73, 42)
+# Trial 10 = c(31,  27,  73,  22, 108,  88,  87,  39,  28,  32)
+
+
+r.sedge99 <- rando.sedge99 %>% 
+  select(-Quadrat)
+
+# total number of species = ncol > 0
+sp.sedge.99 <- r.sedge99[, colSums(r.sedge99 != 0) > 0]
+ncol(sp.sedge.99) 
+# Trial 1 =  29
+# Trial 2 = 21
+# Trial 3 = 29
+# Trial 4 = 29
+# Trial 5 = 29
+# Trial 6 = 27
+# Trial 7 = 29
+# Trial 8 = 30
+# Trial 9 = 29
+# Trial 10 = 26
+
+
+
+# alpha diversity
+pa.sedge.99 <- apply(sp.sedge.99 >0,1,sum) # convert cover value to presence/absence
+mean(pa.sedge.99) 
+# Trial 1 = 8.8
+# Trial 2 = 7.7
+# Trial 3 = 8.7
+# Trial 4 = 7.9
+# Trial 5 = 8.1
+# Trial 6 = 8.4
+# Trial 7 = 7.9
+# Trial 8 = 8.3
+# Trial 9 = 8.6
+# Trial 10 = 7.2
+
+
+
+sd(pa.sedge.99) 
+#Trial 1 = 1.93
+# Trial 2 = 1.70
+# Trial 3 = 2.00
+# Trial 4 = 1.66
+# Trial 5 = 2.18
+# Trial 6 = 2.46
+# Trial 7 = 1.20
+# Trial 8 = 2.31
+# Trial 9 = 2.07
+# Trial 10 = 1.14
+
+
+
+# beta diversity
+ncol(sp.sedge.99)/mean(pa.sedge.99) 
+#Trial 1 = 3.30
+# Trial 2 = 2.73
+# Trial 3 = 3.33
+# Trial 4 = 3.67
+# Trial 5 = 3.58
+# Trial 6 = 3.21
+# Trial 7 = 3.67
+# Trial 8 = 3.61
+# Trial 9 = 3.37
+# Trial 10 = 3.61
+
+
+##~~~~~~~~~~~
+# Fescue
+##~~~~~~~~~~~
+
+fescue.99 <- grps.99 %>% 
+  filter(Assemblage == "fescue") %>% 
+  select(-Assemblage, -Year)
+
+#select 10 random plots
+rando.fescue99 <- fescue.99[sample(nrow(fescue.99), 10), ]
+unique(rando.fescue99$Quadrat)
+#Trial 1 = c(25,  21,  56,  66,  47,  57,  48,  38,  10, 106)
+# Trial 2 = c(50, 57, 10, 74, 75, 56, 59, 66, 86, 21)
+# Trial 3 = c(50, 107,  75, 106,  10,  62,  66,  21,  93,  60)
+# Trial 4 = c(48, 56, 10, 58, 57, 63,  9, 60, 75, 67)
+# Trial 5 = c(65,  49,  10,  56,  75, 107, 106,  76,  20, 37)
+# Trial 6 = c(61, 56, 66, 11, 55, 57, 68, 58, 63, 50)
+# Trial 7 = c(11, 64, 76, 55, 38, 63, 62, 75, 58, 59)
+# Trial 8 = c(55, 20, 59, 25, 57, 60,  9, 63, 93, 86)
+# Trial 9 = c(86, 58, 10, 75, 20, 93, 55, 21, 60, 68)
+# Trial 10 = c(67, 58, 48, 11,  9, 55, 47, 66, 57, 76)
+
+
+
+r.fescue99 <- rando.fescue99 %>% 
+  select(-Quadrat)
+
+
+# total number of species = ncol > 0
+sp.fescue.99 <- r.fescue99[, colSums(r.fescue99 != 0) > 0]
+ncol(sp.fescue.99) 
+#Trial 1 = 31
+# Trial 2 = 32
+# Trial 3 = 31
+# Trial 4 = 30
+# Trial 5 = 31
+# Trial 6 = 32
+# Trial 7 = 30
+# Trial 8 = 27
+# Trial 9 = 28
+# Trial 10 = 32
+
+
+# alpha diversity
+pa.fescue.99 <- apply(sp.fescue.99 >0,1,sum) # convert cover value to presence/absence
+mean(pa.fescue.99) 
+#Trial 1 = 10.3
+# Trial 2 = 9.1
+# Trial 3 = 8.00
+# Trial 4 = 10.7
+# Trial 5 = 8.2
+# Trial 6 = 12.9
+# Trial 7 = 9.1
+# Trial 8 = 8.3
+# Trial 9 = 8.6
+# Trial 10 = 11.2
+
+
+sd(pa.fescue.99) 
+#Trial 1 = 4.95
+# Trial 2 = 3.67
+# Trial 3 = 2.94
+# Trial 4 = 4.45
+# Trial 5 = 3.88
+# Trial 6 = 2.82
+# Trial 7 = 3.21
+# Trial 8 = 3.06
+# Trial 9 = 3.24
+# Trial 10 = 3.91
+
+
+# beta diversity
+ncol(sp.fescue.99)/mean(pa.fescue.99) 
+#Trial 1 = 3.01
+# Trial 2 = 3.52
+# Trial 3 = 3.88
+# Trial 4 = 2.80
+# Trial 5 = 3.78
+# Trial 6 = 2.48
+# Trial 7 = 3.30
+# Trial 8 = 3.25
+# Trial 9 = 3.26
+# Trial 10 = 2.86
+
+
+##~~~~~~~~~~~
+# Bogbean
+##~~~~~~~~~~~
+
+bogbean.99 <- grps.99 %>% 
+  filter(Assemblage == "bogbean") %>% 
+  select(-Assemblage, -Year)
+
+#select 10 random plots
+rando.bogbean99 <- bogbean.99[sample(nrow(bogbean.99), 10), ]
+unique(rando.bogbean99$Quadrat)
+#Trial 1 = c( 83,  13,  16, 15, 104,  14, 102,  78,  80, 103)
+# Trial 2 = c(81,  82,  98,  15, 103,  83,  77,  16, 102,  84)
+# Trial 3 = c(104,  84,  77, 103,  78, 105,  14,  80,  15,  99)
+# Trial 4 = c(15, 103,  82,  84, 104,  78,  14,  13, 80,  77)
+# Trial 5 = c(102, 103,  79,  84,  83,  98,  13,  77, 105,  78)
+# Trial 6 = c(15,  77,  79, 102,  82,  98,  14,  81, 105,  80)
+# Trial 7 = c(83,  79,  77,  81, 104, 102,  78,  80, 105,  16)
+# Trial 8 = c(103,  99,  98, 104,  80,  78,  83,  15,  77, 102)
+# Trial 9 = c( 103,  13,  82,  99,  77,  15, 102,  79, 105,  98)
+# Trial 10 = c(13,  79, 103, 104, 105,  99,  16,  81,  82,  83)
+
+
+
+r.bogbean99 <- rando.bogbean99 %>% 
+  select(-Quadrat)
+
+# total number of species = ncol > 0
+sp.bogbean.99 <- r.bogbean99[, colSums(r.bogbean99 != 0) > 0]
+ncol(sp.bogbean.99) 
+#Trial 1 = 31
+# Trial 2 = 31
+# Trial 3 = 32
+# Trial 4 = 32
+# Trial 5 = 32
+# Trial 6 = 33
+# Trial 7 = 33
+# Trial 8 = 31
+# Trial 9 = 34
+# Trial 10 = 34
+
+
+# alpha diversity
+pa.bogbean.99 <- apply(sp.bogbean.99 >0,1,sum) # convert cover value to presence/absence
+mean(pa.bogbean.99) 
+#Trial 1 = 11
+# Trial 2 = 11
+# Trial 3 = 11.7
+# Trial 4 = 11.5
+# Trial 5 = 11.8
+# Trial 6 = 11.8
+# Trial 7 = 11.8
+# Trial 8 = 10.7
+# Trial 9 = 11
+# Trial 10 = 10.9
+
+sd(pa.bogbean.99) 
+#Trial 1 = 3.68
+# Trial 2 = 2.83
+# Trial 3 = 3.43
+# Trial 4 = 3.34
+# Trial 5 = 3.43
+# Trial 6 = 2.53
+# Trial 7 = 3.33
+# Trial 8 = 3.62
+# Trial 9 = 2.98
+# Trial 10 = 2.64
+
+
+# beta diversity
+ncol(sp.bogbean.99)/mean(pa.bogbean.99) 
+#Trial 1 = 2.82
+# Trial 2 = 2.82
+# Trial 3 = 2.74
+# Trial 4 = 2.78
+# Trial 5 = 2.71
+# Trial 6 = 2.80
+# Trial 7 = 2.80
+# Trial 8 = 2.90
+# Trial 9 = 3.09
+# Trial 10 = 3.12
+
+
+##~~~~~~~~~~~
+# Total
+##~~~~~~~~~~~
+
+rando.99 <- lst(rando.sedge99, rando.fescue99, rando.bogbean99) %>% 
+  reduce(full_join) %>% 
+  replace(is.na(.), 0) %>% 
+  select(-Quadrat)
+
+# total number of species = ncol > 0
+sp.rand.99 <- rando.99[, colSums(rando.99 != 0) > 0]
+ncol(sp.rand.99) 
+#Trial 1 = 39
+# Trial 2 = 38
+# Trial 3 = 41
+# Trial 4 = 42
+# Trial 5 = 39
+# Trial 6 = 41
+# Trial 7 = 42
+# Trial 8 = 39
+# Trial 9 = 40
+# Trial 10 = 40
+
+
+# alpha diversity
+pa.99 <- apply(sp.rand.99 >0,1,sum) # convert cover value to presence/absence
+mean(pa.99) 
+#Trial 1 = 10.03
+# Trial 2 = 9.27
+# Trial 3 = 9.47
+# Trial 4 = 10.03
+# Trial 5 = 9.37
+# Trial 6 = 11.03
+# Trial 7 = 9.6
+# Trial 8 = 9.1
+# Trial 9 = 9.4
+# Trial 10 = 9.77
+
+
+sd(pa.99)
+#Trial 1 = 3.72
+# Trial 2 = 3.07
+# Trial 3 = 3.20
+# Trial 4 = 3.60
+# Trial 5 = 3.59
+# Trial 6 = 3.05
+# Trial 7 = 3.14
+# Trial 8 = 3.16
+# Trial 9 = 2.94
+# Trial 10 = 3.28
+
+
+# beta diversity
+ncol(sp.rand.99)/mean(pa.99) 
+#Trial 1 = 3.89
+# Trial 2 = 4.10
+# Trial 3 = 4.33
+# Trial 4 = 4.19
+# Trial 5 = 4.16
+# Trial 6 = 3.72
+# Trial 7 = 4.38
+# Trial 8 = 4.29
+# Trial 9 = 4.26
+# Trial 10 = 4.10
+```
+
+```{r bootstrap 10 plots - 1979 }
+#start with diversity groupings as determined by each year's cluster analysis & indicator species analysis: d2019_grps, d1999_grps, d1979_grps
+# Sub sample 10 trials using 10 plots from each sub assemblage. 
+
+
+#Filter each year; n quadrat = nrow
+grps.79 <-  d1979_grps %>%
+  mutate(Assemblage = ifelse(Association_Type2 == 1, "sedge",
+                      ifelse(Association_Type2 == 2, "fescue", "bogbean"))) %>%
+  relocate(Assemblage, .after = Year) %>%
+  select(-Transect, -Association_Type, -Association_Type2, -Association_Subtype)
+
+sedge.79 <- grps.79 %>% 
+  filter(Assemblage == "sedge") %>% 
+  select(-Assemblage, -Year)
+
+
+
+#select 10 random plots
+rando.sedge79 <- sedge.79[sample(nrow(sedge.79), 10), ]
+unique(rando.sedge79$Quadrat)
+# Trial 1 = c(26, 88, 47, 29, 59, 57, 60, 72, 22, 31)
+# Trial 2 = c(25,  47,  48,  20,  57,  59,  72,  58, 108,  86)
+# Trial 3 = c(73, 58, 59, 55, 57, 48, 30, 27, 87, 88)
+# Trial 4 = c(96, 97, 29, 22, 86, 93, 57, 56, 49, 47)
+# Trial 5 = c(32, 49, 26, 93, 31, 59, 69, 48, 47, 88)
+# Trial 6 = c(31,  27,  73,  22, 108,  88,  87,  39,  28,  32)
+# Trial 7 = c(24,  60,  26, 108,  94,  28,  88,  97,  23,  31)
+# Trial 8 = c(95, 108,  25,  87,  22,  58,  49,  55,  27,  48)
+# Trial 9 = c(86, 88, 20, 26, 72, 48, 93, 60, 69, 94)
+# Trial 10 = c(47, 56, 87, 32, 25, 73, 58, 28, 93, 27)
+
+
+
+
+r.sedge79 <- rando.sedge79 %>% 
+  select(-Quadrat)
+
+# total number of species = ncol > 0
+sp.sedge.79 <- r.sedge79[, colSums(r.sedge79 != 0) > 0]
+ncol(sp.sedge.79) 
+# Trial 1 = 27
+# Trial 2 = 29
+# Trial 3 = 24
+# Trial 4 = 29
+# Trial 5 = 26
+# Trial 6 = 26
+# Trial 7 = 27
+# Trial 8 = 26
+# Trial 9 = 33
+# Trial 10 = 27
+
+
+# alpha diversity
+pa.sedge.79 <- apply(sp.sedge.79 >0,1,sum) # convert cover value to presence/absence
+mean(pa.sedge.79) 
+# Trial 1 = 8.7
+# Trial 2 = 8.6
+# Trial 3 = 8.8
+# Trial 4 = 9.5
+# Trial 5 = 8.9
+# Trial 6 = 7.2
+# Trial 7 = 8.5
+# Trial 8 = 8.4
+# Trial 9 = 9.6
+# Trial 10 = 8.9
+
+
+sd(pa.sedge.79) 
+# Trial 1 = 2.67
+# Trial 2 = 2.37
+# Trial 3 = 1.69
+# Trial 4 = 2.46
+# Trial 5 = 2.81
+# Trial 6 = 1.14
+# Trial 7 = 3.10
+# Trial 8 = 2.72
+# Trial 9 = 2.72
+# Trial 10 = 2.23
+
+
+# beta diversity
+ncol(sp.sedge.79)/mean(pa.sedge.79)
+# Trial 1 = 3.10
+# Trial 2 = 3.37
+# Trial 3 = 2.73
+# Trial 4 = 3.05
+# Trial 5 = 2.92
+# Trial 6 = 3.61
+# Trial 7 = 3.18
+# Trial 8 = 3.10
+# Trial 9 = 3.44
+# Trial 10 = 3.03
+
+
+##~~~~~~~~~~~
+# Fescue
+##~~~~~~~~~~~
+
+fescue.79 <- grps.79 %>% 
+  filter(Assemblage == "fescue") %>% 
+  select(-Assemblage, -Year)
+
+#select 10 random plots
+rando.fescue79 <- fescue.79[sample(nrow(fescue.79), 10), ]
+unique(rando.fescue79$Quadrat)
+# Trial 1 = c(38,  40, 102,  46,  14,  77,  12,  75,  13,  16)
+# Trial 2 = c(44,  16,  10, 101,  41,   9,  75,  43,  37,  77)
+# Trial 3 = c(40,  43,   9, 102,  76, 104,  42,  41,  44, 103)
+# Trial 4 = c(9,  77,  10,  40,  46,  39, 107,  44,  41,  11)
+# Trial 5 = c(13,  43,  46,  15,  14,  21,  44, 106,  16, 101)
+# Trial 6 = c(67, 58, 48, 11,  9, 55, 47, 66, 57, 76)
+# Trial 7 = c(21, 44, 39, 12, 75, 40, 74, 46,  9, 15)
+# Trial 8 = c(40, 107, 102,  75,  10,  12,  41,  76, 105,  74)
+# Trial 9 = c(44,  10,  14,   9,  21,  43, 107,  11,  40,  46)
+# Trial 10 = c(15, 44,  9, 38, 75, 10, 40, 39, 14, 41)
+
+
+
+
+r.fescue79 <- rando.fescue79 %>% 
+  select(-Quadrat)
+
+# total number of species = ncol > 0
+sp.fescue.79 <- r.fescue79[, colSums(r.fescue79 != 0) > 0]
+ncol(sp.fescue.79) 
+# Trial 1 = 37
+# Trial 2 = 33
+# Trial 3 = 39
+# Trial 4 = 31
+# Trial 5 = 37
+# Trial 6 = 32
+# Trial 7 = 35
+# Trial 8 = 35
+# Trial 9 = 37
+# Trial 10 = 35
+
+
+# alpha diversity
+pa.fescue.79 <- apply(sp.fescue.79 >0,1,sum) # convert cover value to presence/absence
+mean(pa.fescue.79) 
+# Trial 1 = 11.5
+# Trial 2 = 10.1
+# Trial 3 = 12.8
+# Trial 4 = 10.1
+# Trial 5 = 11.7
+# Trial 6 = 11.2
+# Trial 7 = 11.0
+# Trial 8 = 10.5
+# Trial 9 = 10.1
+# Trial 10 = 10.0
+
+
+
+sd(pa.fescue.79) 
+# Trial 1 = 3.78
+# Trial 2 = 4.07
+# Trial 3 = 4.49
+# Trial 4 = 4.20
+# Trial 5 = 2.50
+# Trial 6 = 3.91
+# Trial 7 = 3.94
+# Trial 8 = 4.12
+# Trial 9 = 3.93
+# Trial 10 = 4.40
+
+
+# beta diversity
+ncol(sp.fescue.79)/mean(pa.fescue.79) 
+# Trial 1 = 3.22
+# Trial 2 = 3.27
+# Trial 3 = 3.05
+# Trial 4 = 3.07
+# Trial 5 = 3.16
+# Trial 6 = 2.86
+# Trial 7 = 3.18
+# Trial 8 = 3.33
+# Trial 9 = 3.66
+# Trial 10 = 3.5
+
+
+##~~~~~~~~~~~
+# Bogbean
+##~~~~~~~~~~~
+
+
+bogbean.79 <- grps.79 %>% 
+  filter(Assemblage == "bogbean") %>% 
+  select(-Assemblage, -Year)
+
+#select 10 random plots
+rando.bogbean79 <- bogbean.79[sample(nrow(bogbean.79), 10), ]
+unique(rando.bogbean79$Quadrat)
+# Trial 1 = c(100,  82,  79,  67,  78,  84,  63,  62,  64,  50)
+# Trial 2 = c(67,  81,  62,  79,  83,  63,  85,  65,  66, 100)
+# Trial 3 = c(79, 82, 83, 65, 50, 85, 67, 99, 66, 78)
+# Trial 4 = c(61,  81,  79,  66,  99,  84,  80,  67,  78, 100)
+# Trial 5 = c(79, 99, 63, 67, 82, 98, 81, 78, 65, 62)
+# Trial 6 = c(13,  79, 103, 104, 105,  99,  16,  81,  82,  83)
+# Trial 7 = c(67, 100,  84,  79,  83,  98,  62,  82,  66,  80)
+# Trial 8 = c(98, 79, 65, 66, 81, 99, 67, 84, 62, 80)
+# Trial 9 = c(85, 63, 78, 98, 84, 83, 61, 64, 62, 99)
+# Trial 10 = c(64, 63, 78, 99, 81, 98, 67, 84, 61, 82)
+
+
+
+r.bogbean79 <- rando.bogbean79 %>% 
+  select(-Quadrat)
+
+# total number of species = ncol > 0
+sp.bogbean.79 <- r.bogbean79[, colSums(r.bogbean79 != 0) > 0]
+ncol(sp.bogbean.79) 
+# Trial 1 = 27
+# Trial 2 = 29
+# Trial 3 = 29
+# Trial 4 = 27
+# Trial 5 = 27
+# Trial 6 = 34
+# Trial 7 = 25
+# Trial 8 = 25
+# Trial 9 = 26
+# Trial 10 = 24
+
+
+# alpha diversity
+pa.bogbean.79 <- apply(sp.bogbean.79 >0,1,sum) # convert cover value to presence/absence
+mean(pa.bogbean.79) 
+# Trial 1 = 10.8
+# Trial 2 = 11.7
+# Trial 3 = 11.1
+# Trial 4 = 12.6
+# Trial 5 = 11.4
+# Trial 6 = 10.9
+# Trial 7 = 10.2
+# Trial 8 = 11.7
+# Trial 9 = 9.8
+# Trial 10 = 10.2
+
+
+
+sd(pa.bogbean.79) 
+# Trial 1 = 4.02
+# Trial 2 = 3.40
+# Trial 3 = 4.51
+# Trial 4 = 2.91
+# Trial 5 = 4.22
+# Trial 6 = 2.64
+# Trial 7 = 3.99
+# Trial 8 = 3.13
+# Trial 9 = 3.33
+# Trial 10 = 3.82
+
+
+
+# beta diversity
+ncol(sp.bogbean.79)/mean(pa.bogbean.79) 
+# Trial 1 = 2.50
+# Trial 2 = 2.48
+# Trial 3 = 2.61
+# Trial 4 = 2.14
+# Trial 5 = 2.37
+# Trial 6 = 3.12
+# Trial 7 = 2.45
+# Trial 8 = 2.14
+# Trial 9 = 2.65
+# Trial 10 = 2.35
+
+
+##~~~~~~~~~~~
+# Total
+##~~~~~~~~~~~
+
+rando.79 <- lst(rando.sedge79, rando.fescue79, rando.bogbean79) %>% 
+  reduce(full_join) %>% 
+  replace(is.na(.), 0) %>% 
+  select(-Quadrat)
+
+# total number of species = ncol > 0
+sp.rand.79 <- rando.79[, colSums(rando.79 != 0) > 0]
+ncol(sp.rand.79) 
+# Trial 1 = 40
+# Trial 2 = 42
+# Trial 3 = 43
+# Trial 4 = 40
+# Trial 5 = 38
+# Trial 6 = 40
+# Trial 7 = 41
+# Trial 8 = 42
+# Trial 9 = 42
+# Trial 10 = 40
+
+
+
+# alpha diversity
+pa.79 <- apply(sp.rand.79 >0,1,sum) # convert cover value to presence/absence
+mean(pa.79) 
+# Trial 1 = 10.33
+# Trial 2 = 10.13
+# Trial 3 = 10.9
+# Trial 4 = 10.73
+# Trial 5 = 10.67
+# Trial 6 = 9.77
+# Trial 7 = 9.9
+# Trial 8 = 10.2
+# Trial 9 = 9.83
+# Trial 10 = 9.7
+
+
+sd(pa.79) 
+# Trial 1 = 3.62
+# Trial 2 = 3.48
+# Trial 3 = 4.03
+# Trial 4 = 3.44
+# Trial 5 = 3.40
+# Trial 6 = 3.28
+# Trial 7 = 3.73
+# Trial 8 = 3.54
+# Trial 9 = 3.25
+# Trial 10 = 3.52
+
+
+# beta diversity
+ncol(sp.rand.79)/mean(pa.79) 
+# Trial 1 = 3.87
+# Trial 2 = 4.14
+# Trial 3 = 3.94
+# Trial 4 = 3.73
+# Trial 5 = 3.56
+# Trial 6 = 4.10
+# Trial 7 = 4.14
+# Trial 8 = 4.12
+# Trial 9 = 4.27
+# Trial 10 = 4.12
+
+
+```
+
+
+Stability indices using codyn
+```{r community_stability}
+# library(codyn)
+## see https://rdrr.io/cran/codyn/man/community_stability.html
+## see https://cran.r-project.org/web/packages/codyn/vignettes/Temporal_Diversity_Indices.html 
+
+join_40 <- lst(d1979_grps, d1999_grps, d2019_grps) %>% 
+  reduce(full_join) %>% 
+  replace(is.na(.), 0) %>% 
+  pivot_longer(AGST2:SYSU4, names_to = "Species", values_to = "Cover_class") %>% 
+   mutate(Assemblage = ifelse(Association_Type2 == 1, "Sedge",
+                      ifelse(Association_Type2 == 2, "Fescue", "Bogbean"))) %>% 
+  select(-Transect, -Association_Type2, -Association_Type, -Association_Subtype) %>% 
+  group_by(Year, Assemblage, Species) %>% 
+  summarize(mean_cover = mean(Cover_class, na.rm = TRUE))
+ 
+
+# measure of stability
+cs_avg <- community_stability(join_40, time.var = "Year", abundance.var = "mean_cover")
+# avg. stability = 4.282
+
+
+cs <- community_stability(join_40, time.var = "Year", abundance.var = "mean_cover", replicate.var = "Assemblage")
+kable(cs)
+# 
+# Assemblage  stability
+# Bogbean	    7.173355
+# Fescue	    2.521427			
+# Sedge	      5.082942
+
+# test of significance: variance ratio
+# set bootnumber lower for faster processing; for final use set higher (eg, 9999)
+res_averagedreplicates <- variance_ratio(join_40,
+               time.var = "Year",
+               species.var = "Species",
+               abundance.var = "mean_cover",
+               bootnumber = 999,
+               replicate = "Assemblage")
+# Avg VR = 3.22
+
+res_assemblage <- variance_ratio(join_40,
+               time.var = "Year",
+               species.var = "Species",
+               abundance.var = "mean_cover",
+               bootnumber = 999,
+               replicate = "Assemblage",
+               average.replicates = "FALSE")
+# Bogbean VR = 1.01
+# Fescue VR = 6.16
+# Sedge VR = 2.39
+## VR = 1 indicates species do not covary; > 1 indicates positive covariance among species. 
+
+cs_avg <- data.frame(Assemblage = "Average", stability = cs_avg, lowerCI = res_averagedreplicates$lowerCI, upperCI = res_averagedreplicates$upperCI, nullmean = res_averagedreplicates$nullmean, VR = res_averagedreplicates$VR)
+
+cs_vr <- cs %>% 
+  inner_join(res_assemblage, by = "Assemblage") %>% 
+  rbind(cs_avg)              
+
+cs_vr$Assemblage <- factor(cs_vr$Assemblage, levels = c("Bogbean", "Fescue", "Sedge", "Average"))
+ggplot(cs_vr, aes(VR, stability, color = Assemblage, shape = Assemblage)) + 
+   geom_point(size = 6) + theme_classic() +
+   theme(text = element_text(size = 18)) +  
+   labs(x = "variance ratio", 
+        y = "stability 
+        (temporal mean/temporal sd)") +
+   scale_color_manual(values = c("#0072B2", "#E69F00", "#009E73", "#000000"))
+
+# See Fig. 3 at https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.12569
+## High variance ratio should indicate low stability, which is reflected in data here. 
+## Bogbean assemblage has highest stability, and lowest VR, while Fescue group has greatest VR and thus lowest stability. Sedge is intermediate
+
+```
 
 DELETE or archive below this line once final analyses are done
 ```{r NMDS w/ 95% CI, ANOSIM, PERMANOVA}
@@ -475,6 +2089,7 @@ sol <- metaMDS(com_out, distance = "bray", k = 3, trymax = 100)
 NMDS = data.frame(MDS1 = sol$points[,1], MDS2 = sol$points[,2], Year=join_40_no_outliers$Year, Comm = join_40_no_outliers$Association_Type2)
 NMDS$Comm <- as.factor(NMDS$Comm)
 NMDS$Year <- as.factor(NMDS$Year)
+
 #NMDS.mean = aggregate(NMDS[,1:2],list(Year=NMDS$Year),mean)
 ggplot(NMDS, aes(x = MDS1, y = MDS2)) + 
   geom_point(aes(shape = Year, color = Year))
@@ -684,7 +2299,7 @@ fescue <- join_40_no_outliers %>%
 #####
 # cover as matrix
 #####
-bogbean_out = bogbean[,10:ncol(bogbean)]
+bogbean_out = bogbean[,7:ncol(bogbean)]
 matrix_bogbean = as.matrix(bogbean_out)
 
 sedge_out = sedge[,10:ncol(sedge)]
@@ -696,7 +2311,7 @@ matrix_fescue = as.matrix(fescue_out)
 #####
 # calculate distances
 #####
-dst_bogbean <- vegdist(bogbean[,10:81], method = "bray")
+dst_bogbean <- vegdist(bogbean[,7:78], method = "bray")
 
 dst_sedge <- vegdist(sedge[,10:81], method = "bray")
 
