@@ -2280,7 +2280,7 @@ sedge.99 <- grps.99 %>%
   filter(Assemblage == "sedge") %>% 
   select(-Assemblage, -Year)
 
-#select 10 random plots
+#select 18 random plots
 rando18.sedge99 <- sedge.99[sample(nrow(sedge.99), 18), ]
 unique(rando18.sedge99$Quadrat)
 
@@ -2366,7 +2366,7 @@ fescue.99 <- grps.99 %>%
   filter(Assemblage == "fescue") %>% 
   select(-Assemblage, -Year)
 
-#select 10 random plots
+#select 18 random plots
 rando18.fescue99 <- fescue.99[sample(nrow(fescue.99), 18), ]
 unique(rando18.fescue99$Quadrat)
 # Trial 1 = c(56  62  66  65  11  47  55  64  60  67  10  76  48  59  49  57  20 107)
@@ -2453,7 +2453,7 @@ bogbean.99 <- grps.99 %>%
   filter(Assemblage == "bogbean") %>% 
   select(-Assemblage, -Year)
 
-#select 10 random plots
+#select 18 random plots
 rando18.bogbean99 <- bogbean.99[sample(nrow(bogbean.99), 18), ]
 unique(rando18.bogbean99$Quadrat)
 
@@ -2605,35 +2605,35 @@ ncol(sp.rand18.99)/mean(pa18.99)
 
 ```{r bootstrap 18 plots - 1979}
 
-grps.79 <-  d1979_grps %>% 
-  mutate(Assemblage = ifelse(Association_Type2 == 1, "sedge",
-                      ifelse(Association_Type2 == 2, "fescue", "bogbean"))) %>% 
-  relocate(Assemblage, .after = Year) %>% 
-  select(-Transect, -Association_Type2) 
+# grps.79 <-  d1979_grps %>% 
+#   mutate(Assemblage = ifelse(Association_Type2 == 1, "sedge",
+#                       ifelse(Association_Type2 == 2, "fescue", "bogbean"))) %>% 
+#   relocate(Assemblage, .after = Year) %>% 
+#   select(-Transect, -Association_Type2) 
 
 # select 18 random plots from each assemblage type & calculate diversity components
 
 ##~~~~~~~~~~~
 # Sedge
 ##~~~~~~~~~~~
-sedge.79 <- grps.79 %>% 
-  filter(Assemblage == "sedge") %>% 
-  select(-Assemblage, -Year)
+# sedge.79 <- grps.79 %>% 
+#   filter(Assemblage == "sedge") %>% 
+#   select(-Assemblage, -Year)
 
-#select 10 random plots
+#select 18 random plots
 rando18.sedge79 <- sedge.79[sample(nrow(sedge.79), 18), ]
 unique(rando18.sedge79$Quadrat)
 
-# Trial 1 = 
-# Trial 2 =
-# Trial 3 = 
-# Trial 4 = 
-# Trial 5 = 
-# Trial 6 = 
-# Trial 7 = 
-# Trial 8 =
-# Trial 9 = 
-# Trial 10 = 
+# Trial 1 = c(32  49 108  23  24  93  28  97  20  56  96  73  87  30  31  72  68  22)
+# Trial 2 = c(49 29 23 57 69 26 22 93 86 25 87 30 94 28 97 20 27 48)
+# Trial 3 = c(57  27  31  58  95  97  48  87  28  86  88  25 108  94  96  22  69  24)
+# Trial 4 = c(94  49  27  24  23  29  86  32 108  73  56  97  48  25  26  28  47  69)
+# Trial 5 = c(47  88  20  94  29  28  60  32  23  95  87  73  55  48  25 108  86  22)
+# Trial 6 = c(108  55  25  97  94  24  49  31  29  47  57  48  59  73  20  87  96  72)
+# Trial 7 = c(58 31 73 20 72 96 87 24 86 27 23 30 29 57 60 69 93 94)
+# Trial 8 = c(97  95  20 108  94  59  27  47  48  69  22  49  72  86  58  68  26  25)
+# Trial 9 = c(86 30 23 47 96 94 26 68 22 49 56 69 57 20 72 59 93 58)
+# Trial 10 = c(23 26 93 48 88 32 30 69 27 24 31 59 29 87 28 72 57 25)
 
 
 
@@ -2643,82 +2643,82 @@ r18.sedge79 <- rando18.sedge79 %>%
 # total number of species = ncol > 0
 sp.sedge18.79 <- r18.sedge79[, colSums(r18.sedge79 != 0) > 0]
 ncol(sp.sedge18.79) 
-# Trial 1 = 
-# Trial 2 =
-# Trial 3 = 
-# Trial 4 = 
-# Trial 5 = 
-# Trial 6 = 
-# Trial 7 = 
-# Trial 8 =
-# Trial 9 = 
-# Trial 10 = 
+# Trial 1 =  31
+# Trial 2 = 33
+# Trial 3 = 29
+# Trial 4 = 32
+# Trial 5 = 34
+# Trial 6 = 32
+# Trial 7 = 35
+# Trial 8 = 34
+# Trial 9 = 34
+# Trial 10 = 29
 
 
 # alpha diversity
 pa.sedge18.79 <- apply(sp.sedge18.79 >0,1,sum) # convert cover value to presence/absence
 mean(pa.sedge18.79) 
 
-# Trial 1 = 
-# Trial 2 =
-# Trial 3 = 
-# Trial 4 = 
-# Trial 5 = 
-# Trial 6 = 
-# Trial 7 = 
-# Trial 8 =
-# Trial 9 = 
-# Trial 10 = 
+# Trial 1 = 10.28
+# Trial 2 = 10.78
+# Trial 3 = 10.28
+# Trial 4 = 10.83
+# Trial 5 = 10.22
+# Trial 6 = 10.67
+# Trial 7 = 11.22
+# Trial 8 = 11.0
+# Trial 9 = 11.39
+# Trial 10 = 10.06
 
 
 sd(pa.sedge18.79) 
-# Trial 1 = 
-# Trial 2 =
-# Trial 3 = 
-# Trial 4 = 
-# Trial 5 = 
-# Trial 6 = 
-# Trial 7 = 
-# Trial 8 =
-# Trial 9 = 
-# Trial 10 = 
+# Trial 1 = 2.42
+# Trial 2 = 2.32
+# Trial 3 = 2.27
+# Trial 4 = 2.62
+# Trial 5 = 2.71
+# Trial 6 = 2.28
+# Trial 7 = 2.32
+# Trial 8 = 2.40
+# Trial 9 = 2.12
+# Trial 10 = 1.89
 
 
 # beta diversity
 ncol(sp.sedge18.79)/mean(pa.sedge18.79) 
-# Trial 1 = 
-# Trial 2 =
-# Trial 3 = 
-# Trial 4 = 
-# Trial 5 = 
-# Trial 6 = 
-# Trial 7 = 
-# Trial 8 =
-# Trial 9 = 
-# Trial 10 = 
+# Trial 1 = 3.02
+# Trial 2 = 3.06
+# Trial 3 = 2.82
+# Trial 4 = 2.95
+# Trial 5 = 3.33
+# Trial 6 = 3.0
+# Trial 7 = 3.12
+# Trial 8 = 3.09
+# Trial 9 = 2.99
+# Trial 10 = 2.88
 
 
 ##~~~~~~~~~~~
 # Fescue
 ##~~~~~~~~~~~
+# 
+# fescue.79 <- grps.79 %>% 
+#   filter(Assemblage == "fescue") %>% 
+#   select(-Assemblage, -Year)
 
-fescue.79 <- grps.79 %>% 
-  filter(Assemblage == "fescue") %>% 
-  select(-Assemblage, -Year)
-
-#select 10 random plots
+#select 18 random plots
 rando18.fescue79 <- fescue.79[sample(nrow(fescue.79), 18), ]
 unique(rando18.fescue79$Quadrat)
-# Trial 1 = 
-# Trial 2 =
-# Trial 3 = 
-# Trial 4 = 
-# Trial 5 = 
-# Trial 6 = 
-# Trial 7 = 
-# Trial 8 =
-# Trial 9 = 
-# Trial 10 = 
+# Trial 1 = c(74  39  77  16  40  42  11 106 104  76 103  10 102 105  44  43  37 107)
+# Trial 2 = c(40  13  75  11   9  43 105 104 106 103  77  44  37  76  14  39  46 102)
+# Trial 3 = c(43  46  40  38  14 107 104  37  77 105  39  75 106  15  11  74  16 103)
+# Trial 4 = c(40  75  14 105  15  41  42  38 107 106   9  77 102 101  10  74  13  43)
+# Trial 5 = c(44  41 103   9 104  40  37  43  11  14  38  39 106  42  13  15 101 102)
+# Trial 6 = c(43  44  13  16 102  46  39  76 101  42 107  15  41  75  37  21   9  10)
+# Trial 7 = c(74  15  77  11 106  16  39 102  75 103 107  76 104  44 105  21 101  46)
+# Trial 8 = c(9  44  75  40 103  76  41 102 104  12  10  21  15  42  13  11  77 105)
+# Trial 9 = c(105  10  74  76   9  13  15 103  44  16  75  43  11  14  41  38  46 101)
+# Trial 10 = c(15  75 107   9  13  11  16  41  38 105  77  42  43  37 101  46 103  21)
 
 
 r18.fescue79 <- rando18.fescue79 %>% 
@@ -2728,83 +2728,83 @@ r18.fescue79 <- rando18.fescue79 %>%
 sp.fescue18.79 <- r18.fescue79[, colSums(r18.fescue79 != 0) > 0]
 ncol(sp.fescue18.79) 
 
-# Trial 1 = 
-# Trial 2 =
-# Trial 3 = 
-# Trial 4 = 
-# Trial 5 = 
-# Trial 6 = 
-# Trial 7 = 
-# Trial 8 =
-# Trial 9 = 
-# Trial 10 = 
+# Trial 1 = 44
+# Trial 2 = 44
+# Trial 3 = 43
+# Trial 4 = 43
+# Trial 5 = 43
+# Trial 6 = 41
+# Trial 7 = 44
+# Trial 8 = 45
+# Trial 9 = 43
+# Trial 10 = 43
 
 # alpha diversity
 pa.fescue18.79 <- apply(sp.fescue18.79 >0,1,sum) # convert cover value to presence/absence
 mean(pa.fescue18.79) 
 
-# Trial 1 = 
-# Trial 2 =
-# Trial 3 = 
-# Trial 4 = 
-# Trial 5 = 
-# Trial 6 = 
-# Trial 7 = 
-# Trial 8 =
-# Trial 9 = 
-# Trial 10 = 
+# Trial 1 = 13.67
+# Trial 2 = 13.61
+# Trial 3 = 12.89
+# Trial 4 = 12.0
+# Trial 5 = 13.44
+# Trial 6 = 12.72
+# Trial 7 = 13.72
+# Trial 8 = 13.28
+# Trial 9 = 12.11
+# Trial 10 = 12.17
 
 
 sd(pa.fescue18.79) 
 
-# Trial 1 = 
-# Trial 2 =
-# Trial 3 = 
-# Trial 4 = 
-# Trial 5 = 
-# Trial 6 = 
-# Trial 7 = 
-# Trial 8 =
-# Trial 9 = 
-# Trial 10 = 
+# Trial 1 = 4.35
+# Trial 2 = 4.10
+# Trial 3 = 3.88
+# Trial 4 = 3.55
+# Trial 5 = 4.27
+# Trial 6 = 3.82
+# Trial 7 = 3.79
+# Trial 8 = 3.98
+# Trial 9 = 3.92
+# Trial 10 = 3.42
 
 
 # beta diversity
 ncol(sp.fescue18.79)/mean(pa.fescue18.79) 
 
-# Trial 1 = 
-# Trial 2 =
-# Trial 3 = 
-# Trial 4 = 
-# Trial 5 = 
-# Trial 6 = 
-# Trial 7 = 
-# Trial 8 =
-# Trial 9 = 
-# Trial 10 = 
+# Trial 1 = 3.22
+# Trial 2 = 3.23
+# Trial 3 = 3.34
+# Trial 4 = 3.58
+# Trial 5 = 3.20
+# Trial 6 = 3.22
+# Trial 7 = 3.21
+# Trial 8 = 3.39
+# Trial 9 = 3.55
+# Trial 10 = 3.53
 
 ##~~~~~~~~~~~
 # Bogbean
 ##~~~~~~~~~~~
 
-bogbean.79 <- grps.79 %>% 
-  filter(Assemblage == "bogbean") %>% 
-  select(-Assemblage, -Year)
+# bogbean.79 <- grps.79 %>% 
+#   filter(Assemblage == "bogbean") %>% 
+#   select(-Assemblage, -Year)
 
-#select 10 random plots
+#select 18 random plots
 rando18.bogbean79 <- bogbean.79[sample(nrow(bogbean.79), 18), ]
 unique(rando18.bogbean79$Quadrat)
 
-# Trial 1 = 
-# Trial 2 =
-# Trial 3 = 
-# Trial 4 = 
-# Trial 5 = 
-# Trial 6 = 
-# Trial 7 = 
-# Trial 8 =
-# Trial 9 = 
-# Trial 10 = 
+# Trial 1 = c(61  63  64  79 100  78  81  67  98  80  85  62  82  84  66  83  99  50)
+# Trial 2 = c(78  83  61  62  65  63  98  84  99  64  81 100  85  79  80  50  67  82)
+# Trial 3 = c(50  99  79  63  62 100  81  84  66  78  83  98  65  61  67  80  82  85)
+# Trial 4 = c(78  85  67  62  98  65  84  81  83  79  80  63  61  82  64 100  50  66)
+# Trial 5 = c(84  83  63  81  66  99  80  61  64  79  82  65  85 100  62  50  98  67)
+# Trial 6 = c(85  62  50  66  83  99  98  82  67  81  80 100  79  63  78  65  64  61)
+# Trial 7 = c(85  79  67  61  63  78  83  80  66  84  99  81  65 100  64  82  62  50)
+# Trial 8 = c(82  66  62  67  80  98  61  99 100  83  63  50  65  84  64  85  78  79)
+# Trial 9 = c(100  84  85  83  99  67  80  62  78  79  63  66  64  65  61  82  98  81)
+# Trial 10 = c(79  64  83  67  99  66  82  78  85 100  50  63  98  62  80  61  84  81)
 
 
 r18.bogbean79 <- rando18.bogbean79 %>% 
@@ -2814,60 +2814,60 @@ r18.bogbean79 <- rando18.bogbean79 %>%
 sp.bogbean18.79 <- r18.bogbean79[, colSums(r18.bogbean79 != 0) > 0]
 ncol(sp.bogbean18.79) 
 
-# Trial 1 = 
-# Trial 2 =
-# Trial 3 = 
-# Trial 4 = 
-# Trial 5 = 
-# Trial 6 = 
-# Trial 7 = 
-# Trial 8 =
-# Trial 9 = 
-# Trial 10 = 
+# Trial 1 = 31
+# Trial 2 = 32
+# Trial 3 = 32
+# Trial 4 = 32
+# Trial 5 = 31
+# Trial 6 = 32
+# Trial 7 = 32
+# Trial 8 = 32
+# Trial 9 = 32
+# Trial 10 = 31
 
 # alpha diversity
 pa.bogbean18.79 <- apply(sp.bogbean18.79 >0,1,sum) # convert cover value to presence/absence
 mean(pa.bogbean18.79) 
 
-# Trial 1 = 
-# Trial 2 =
-# Trial 3 = 
-# Trial 4 = 
-# Trial 5 = 
-# Trial 6 = 
-# Trial 7 = 
-# Trial 8 =
-# Trial 9 = 
-# Trial 10 = 
+# Trial 1 = 12.61
+# Trial 2 = 12.89
+# Trial 3 = 13.06
+# Trial 4 = 13.0
+# Trial 5 = 12.56
+# Trial 6 = 12.94
+# Trial 7 = 13.0
+# Trial 8 = 12.72
+# Trial 9 = 12.89
+# Trial 10 = 12.61
 
 
 sd(pa.bogbean18.79) 
 
-# Trial 1 = 
-# Trial 2 =
-# Trial 3 = 
-# Trial 4 = 
-# Trial 5 = 
-# Trial 6 = 
-# Trial 7 = 
-# Trial 8 =
-# Trial 9 = 
-# Trial 10 = 
+# Trial 1 = 3.57
+# Trial 2 = 3.71
+# Trial 3 = 3.59
+# Trial 4 = 3.65
+# Trial 5 = 3.48
+# Trial 6 = 3.69
+# Trial 7 = 3.65
+# Trial 8 = 3.68
+# Trial 9 = 3.71
+# Trial 10 = 3.57
 
 
 # beta diversity
 ncol(sp.bogbean18.79)/mean(pa.bogbean18.79) 
 
-# Trial 1 = 
-# Trial 2 =
-# Trial 3 = 
-# Trial 4 = 
-# Trial 5 = 
-# Trial 6 = 
-# Trial 7 = 
-# Trial 8 =
-# Trial 9 = 
-# Trial 10 = 
+# Trial 1 = 2.46
+# Trial 2 = 2.48
+# Trial 3 = 2.45
+# Trial 4 = 2.46
+# Trial 5 = 2.47
+# Trial 6 = 2.47
+# Trial 7 = 2.46
+# Trial 8 = 2.52
+# Trial 9 = 2.48
+# Trial 10 = 2.46
 
 
 ##~~~~~~~~~~~
@@ -2883,16 +2883,16 @@ rando18.79 <- lst(rando18.sedge79, rando18.fescue79, rando18.bogbean79) %>%
 sp.rand18.79 <- rando18.79[, colSums(rando18.79 != 0) > 0]
 ncol(sp.rand18.79) 
 
-# Trial 1 = 
-# Trial 2 =
-# Trial 3 = 
-# Trial 4 = 
-# Trial 5 = 
-# Trial 6 = 
-# Trial 7 = 
-# Trial 8 =
-# Trial 9 = 
-# Trial 10 = 
+# Trial 1 = 47
+# Trial 2 = 48
+# Trial 3 = 47
+# Trial 4 = 49
+# Trial 5 = 47
+# Trial 6 = 47
+# Trial 7 = 48
+# Trial 8 = 49
+# Trial 9 = 48
+# Trial 10 = 46
 
 
 
@@ -2900,44 +2900,44 @@ ncol(sp.rand18.79)
 pa18.79 <- apply(sp.rand18.79 >0,1,sum) # convert cover value to presence/absence
 mean(pa18.79) 
 
-# Trial 1 = 
-# Trial 2 =
-# Trial 3 = 
-# Trial 4 = 
-# Trial 5 = 
-# Trial 6 = 
-# Trial 7 = 
-# Trial 8 =
-# Trial 9 = 
-# Trial 10 = 
+# Trial 1 = 12.19
+# Trial 2 = 12.43
+# Trial 3 = 12.07
+# Trial 4 = 11.94
+# Trial 5 = 12.07
+# Trial 6 = 12.11
+# Trial 7 = 12.65
+# Trial 8 = 12.33
+# Trial 9 = 12.13
+# Trial 10 = 11.61
 
 
 sd(pa18.79) 
 
-# Trial 1 = 
-# Trial 2 =
-# Trial 3 = 
-# Trial 4 = 
-# Trial 5 = 
-# Trial 6 = 
-# Trial 7 = 
-# Trial 8 =
-# Trial 9 = 
-# Trial 10 = 
+# Trial 1 = 3.75
+# Trial 2 = 3.61
+# Trial 3 = 3.50
+# Trial 4 = 3.36
+# Trial 5 = 3.74
+# Trial 6 = 3.43
+# Trial 7 = 3.42
+# Trial 8 = 3.50
+# Trial 9 = 3.34
+# Trial 10 = 3.20
 
 # beta diversity
 ncol(sp.rand18.79)/mean(pa18.79) 
 
-# Trial 1 = 
-# Trial 2 =
-# Trial 3 = 
-# Trial 4 = 
-# Trial 5 = 
-# Trial 6 = 
-# Trial 7 = 
-# Trial 8 =
-# Trial 9 = 
-# Trial 10 = 
+# Trial 1 = 3.86
+# Trial 2 = 3.86
+# Trial 3 = 3.89
+# Trial 4 = 4.10
+# Trial 5 = 3.89
+# Trial 6 = 3.88
+# Trial 7 = 3.80
+# Trial 8 = 3.97
+# Trial 9 = 3.96
+# Trial 10 = 3.96
 
 ```
 
