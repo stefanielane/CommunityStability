@@ -30,11 +30,11 @@ d2019 <- read.csv("2019_Lane_BINNED-NRCS.csv")
 #view(d2019)
 
 d1999 <- read.csv("1999_Denoth_ORIGINAL-NRCS.csv") #first column has a byte order mark
-colnames(d1999)[1] <- gsub('^...','',colnames(d1999)[1])
+#colnames(d1999)[1] <- gsub('^...','',colnames(d1999)[1])
 #view(d1999)
 
 d1979 <- read.csv("1979_Bradfield_ORIGINAL-NRCS.csv") #first column has a byte order mark
-colnames(d1979)[1] <- gsub('^...','',colnames(d1979)[1])
+#colnames(d1979)[1] <- gsub('^...','',colnames(d1979)[1])
 #view(d1979)
 
 ```
@@ -743,18 +743,40 @@ ncol(sp_present_bogbean2019)/mean(sp_plot_bogbean2019) #3.25
 RQ3: "What is the total community species turnover, and which species gained or lost are driving changes within each assemblage’s diversity?"
 ```{r turnover}
 # https://rdrr.io/cran/codyn/man/turnover.html
-# uses join_40 from RQ2
-#Note: "Cover_class" is a course abundance value where 0 = absent, 1 = 1-25% cover, 2 = 25-50% cover, etc. Because I want to understand turnover within the assemblage, I average all cover for a given species within that assemblage (across all quadrats)
+#Note: turnover requires a column for abundance (not species presence/absence), here, Cover_class. "Cover_class" is a course abundance value where 0 = absent, 1 = 1-25% cover, 2 = 25-50% cover, etc. Because I want to understand turnover within the assemblage, I average all cover for a given species within that assemblage (across all quadrats (plots))
 
-# df_turnover <- join_40 %>% group_by(Year, Assemblage, Species) %>% 
-#   summarize(mean_cover = mean(Cover_class, na.rm = TRUE))
+## Note: all calculations are comparison of 1979-1999, and 1999-2019. 
+
+
+join_40 <- lst(d1979_grps, d1999_grps, d2019_grps) %>% 
+  reduce(full_join) %>% 
+  replace(is.na(.), 0) %>% 
+  pivot_longer(AGST2:SYSU4, names_to = "Species", values_to = "Cover_class") %>% 
+   mutate(Assemblage = ifelse(Association_Type2 == 1, "Sedge",
+                      ifelse(Association_Type2 == 2, "Fescue", "Bogbean"))) %>% 
+  select(-Transect, -Association_Type2, -Association_Type, -Association_Subtype) %>% 
+  group_by(Year, Assemblage, Species) %>% 
+  summarize(mean_cover = mean(Cover_class, na.rm = TRUE))
+
+
+# test.turnover <- join_40 %>% 
+#   filter(!Year == 1979)
+# 
+# test.total <- turnover(df = test.turnover, 
+#                      time.var = "Year", 
+#                      species.var = "Species", 
+#                      abundance.var = "mean_cover", 
+#                      replicate.var = "Assemblage", 
+#                      metric = "total")
+
 
  # Calculate relative total turnover within replicates
 total.res <- turnover(df = join_40, 
                      time.var = "Year", 
                      species.var = "Species", 
                      abundance.var = "mean_cover", 
-                     replicate.var = "Assemblage")
+                     replicate.var = "Assemblage", 
+                     metric = "total")
 kable(total.res)
  
 # Calculate relative species appearances within replicates
@@ -779,8 +801,10 @@ appear.res <- turnover(df=join_40,
  
  turnover <- turnover[, c("Assemblage", "Year", "appearance", "disappearance", "total")]
  
-kable(turnover, align = "c", booktabs = TRUE) %>%
-   row_spec(1:6, color = 'black') %>%
+kable(turnover, 
+   col.names = c("Assemblage", "Year", "Species \nAppearance", "Species \nDisappearance", "Total \nTurnover"),
+   align = "c",  digits = 2) %>% #booktabs = TRUE,
+   #row_spec(1:6, color = 'black') %>%
    kable_styling(font_size = 18, latex_options = "scale_down") %>%
     save_kable("turnover.jpeg")
  
@@ -796,6 +820,8 @@ library(wesanderson)
 ## indicator analysis that appear in all 3 years? Poa palustris not in 2019...
 ############################################################################################################
 # all species, but rainbow legend is hard to interpret
+
+# may need to use join.grps
 clock_sp <- join_40 %>% 
    filter(Species %in% c("AGST2", "BICE", "CALY3", "DECE", "ELPA3", "EQFL", "EQPA", "EQVA", "FEAR3", 
                          "GATR3", "IMCA", "JUAR",  "LAPA4", "LYSA2", "LYTH2", "MEAQ", "METR3", "MYSC", 
