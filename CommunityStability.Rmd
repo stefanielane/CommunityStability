@@ -30,11 +30,11 @@ library(RColorBrewer)
 d2019 <- read.csv("2019_Lane_BINNED-NRCS.csv")
 #view(d2019)
 
-d1999 <- read.csv("1999_Denoth_ORIGINAL-NRCS.csv") #first column has a byte order mark
+d1999 <- read.csv("1999_Denoth-NRCS.csv") # if first column has a byte order mark
 #colnames(d1999)[1] <- gsub('^...','',colnames(d1999)[1])
 #view(d1999)
 
-d1979 <- read.csv("1979_Bradfield_ORIGINAL-NRCS.csv") #first column has a byte order mark
+d1979 <- read.csv("1979_Bradfield-NRCS.csv") # if first column has a byte order mark
 #colnames(d1979)[1] <- gsub('^...','',colnames(d1979)[1])
 #view(d1979)
 
@@ -161,6 +161,7 @@ plot(dend1979, ylab = "Euclidean Distance", main = "1979")
 # MULTI-PANEL DENDROGRAM
 ###########################
 
+
 #install.packages("svglite")
 library(svglite)
 
@@ -204,8 +205,8 @@ abund = d2019_grps[,5:ncol(d2019_grps)]
 assoc = d2019_grps$Association_Type2
 
 ## turn comments off to run - takes a minute
-inv_r.g = multipatt(abund, assoc, func = "r.g", control = how(nperm=9999))
-summary(inv_r.g, indvalcomp = TRUE)
+# inv_r.g = multipatt(abund, assoc, func = "r.g", control = how(nperm=9999))
+# summary(inv_r.g, indvalcomp = TRUE)
 
 ## 1 = Sedge
 ## 2 = Fescue
@@ -439,21 +440,54 @@ summary(bray_inv79)
 
 RQ2: "Is total species diversity stable within and between assemblage types over time?"
 
+``` {r join data}
+join_40 <- lst(d1979_grps, d1999_grps, d2019_grps) %>% 
+  reduce(full_join) %>% 
+  replace(is.na(.), 0) %>% 
+  pivot_longer(AGST2:SCMI2, names_to = "Species", values_to = "Cover_class") %>% 
+   mutate(Assemblage = ifelse(Association_Type2 == 1, "Sedge",
+                      ifelse(Association_Type2 == 2, "Fescue", "Bogbean"))) %>% 
+  select(-Transect, -Association_Type2, -Association_Type, -Association_Subtype) %>% 
+  group_by(Year, Assemblage, Species) %>% 
+  summarize(mean_cover = mean(Cover_class, na.rm = TRUE))
+
+#View(join_40)
+
+
+```
+
 ```{r species abundance table}
 
 # exported table as csv, performed percent change calculations and sorted table in Excel
+unique(join_40$Species)
 
 sp_table <- join_40 %>%
   pivot_wider(names_from = "Year", values_from = "mean_cover") %>%
-  filter_at(vars(`1979`, `1999`, `2019`), any_vars(.>0)) 
-  #mutate(sp_table, PercentChange = ((`2019`-`1979`)/`1979`)*100) 
-  # arrange(factor(desc(PctChange))) %>%
-  # mutate(PctChange = sprintf("%0.2f", PercentChange)) %>%
-  # mutate(PctChange = replace(PctChange, PctChange == "NaN", ""), PctChange = replace(PctChange, PctChange == "Inf", "")) %>%
-  # select(-("PercentChange"))
-sp_table
+  filter_at(vars(`1979`, `1999`, `2019`), any_vars(.>0)) %>% 
+  mutate(Status = ifelse(Species == c("AGST2", "CIAR4", "FEAR3", "IRPS", "LYEU", "LYSA2", "MEAQ", "MEAR", "MYSC", "PHAR3", "RUCO2"), "Non-native",
+                ifelse(Species == c("Galium_sp", "Poaceae_misc", "Asteraceae_misc", "Carex_sp1", "Festuca_sp", "Salix_sp"), "Unknown", "Native"))) %>%
+  mutate(Species = recode(Species, 
+            "AGST2" = "Agrostis stolonifera", "ALGE2" = "Alopecurus geniculatus", "ALPL"  = "Alisma plantago aquatica",
+            "BICE"  = "Bidens cernua", "CALY3" = "Carex lyngbyei", "CAPAP6" = "Caltha palustris", "DECE"  = "Deschampsia caespitosa",
+            "ELPA3" = "Eleocharis palustris", "EQAR"  = "Equisetum arvense", "EQFL"  = "Equisetum fluviatile", "EQPA" = "Equisetum palustre",
+            "EQVA" = "Equisetum variegatum", "FEAR3" = "Festuca arundinacea", "Galium_sp" = "Galium sp.", "GATR3"  ="Galium trifidum",
+            "HYSC5"  = "Hypericum scouleri", "IMCA" = "Impatiens capensis", "IRPS"  = "Iris pseudocorus", "JUAC" = "Juncus acuminatus",
+            "JUAR"  = "Juncus articulatus", "JUOX" = "Juncus oxymeris", "LAPA4" = "Lathyrus palustris", "LEOR"  = "Leersia oryzoides",
+            "LIOC"  = "Lilaeopsis occidentalis","LYAM3" = "Lysichiton americanum","LYEU" = "Lycopus europaeus","LYSA2" =  "Lythrum salicaria",
+            "LYTH2" = "Lysimachia thyrsiflora","MEAQ"  = "Mentha aquatica","MEAR4" = "Mentha arvensis","METR3" = "Menyanthes trifoliata",
+            "MYSC"  = "Myosotis scorpiodes","OESA" = "Oenanthe sarmentosa","PHAR3" = "Phalaris arundinacea","PLDID"  = "Platanthera dilatata",
+            "Poaceae_misc" = "Poaceae sp.","POPA2" = "Poa palustris","POPA23"  = "Potentilla anserina-pacifica","POTR2" = "Poa trivialis",
+            "RUCO2" = "Rumex conglomeratus", "RUOC3" = "Rumex occidentalis","SALA2"  = "Sagittaria latifolia","SALUL" = "Salix lasiandra",
+            "SASC"  = "Salix scouleriana","SCTA2" = "Schoenoplectus tabernaemontani","SIHE4" = "Sidalcia hendersonii","SISU2" = "Sium suave",
+            "SYSU4"  = "Symphyotrichum subspicatum","TRWO" = "Trifolium wormskjoldii","TYLA"  = "Typha latifolia","Asteraceae_misc" = "Asteracea sp.",
+            "Carex_sp1" = "Carex sp.","CIAR4" = "Cirsium arvense","DUAR3"  = "Dulichium arundinaceum","Festuca_sp" = "Festuca sp.", 
+            "HOBR2" = "Hordeum brachyantherum","HYFO7"  = "Hypericum formosum","JUEF" = "Juncus effusus","MIGU"  = "Mimulus guttatus",
+            "MYGA"  = "Myrica gale","POHY"  = "Polygonum hydropiper","Salix_sp"   = "Salix sp.","SASI2" = "Salix sitchensis",
+            "GAPA3" = "Galium palustre","PUPA3" = "Puccinella pauciflora","SCMI2" =   "Scirpus microcarpus"))
 
-write.csv(sp_table, "species_table_pct.csv")
+#view(sp_table)
+
+#write.csv(sp_table, "species_table_pct.csv")
 
 ```
 
@@ -466,7 +500,7 @@ div.join <- lst(d1979_grps, d1999_grps, d2019_grps) %>%
                       ifelse(Association_Type2 == 2, "Fescue", "Bogbean"))) %>% 
   relocate(Assemblage, .after = Year) %>% 
   select(-Transect, -Association_Type, -Association_Type2, -Association_Subtype) 
-view(div.join)
+#view(div.join)
 
 # Filter each year; n quadrat = nrow
 div79 <- filter(div.join, Year == "1979") %>% 
@@ -749,17 +783,6 @@ RQ3: "What is the total community species turnover, and which species gained or 
 ## Note: all calculations are comparison of 1979-1999, and 1999-2019. 
 
 
-join_40 <- lst(d1979_grps, d1999_grps, d2019_grps) %>% 
-  reduce(full_join) %>% 
-  replace(is.na(.), 0) %>% 
-  pivot_longer(AGST2:SYSU4, names_to = "Species", values_to = "Cover_class") %>% 
-   mutate(Assemblage = ifelse(Association_Type2 == 1, "Sedge",
-                      ifelse(Association_Type2 == 2, "Fescue", "Bogbean"))) %>% 
-  select(-Transect, -Association_Type2, -Association_Type, -Association_Subtype) %>% 
-  group_by(Year, Assemblage, Species) %>% 
-  summarize(mean_cover = mean(Cover_class, na.rm = TRUE))
-
-
 # test.turnover <- join_40 %>% 
 #   filter(!Year == 1979)
 # 
@@ -940,8 +963,7 @@ clock.ann
 
 ```
 
-
-```{r frequncy bar charts}
+```{r indicator bar charts}
 
 # View(clock_sp)
 # x = species, color = year, y = cover class, panel = assemblage
@@ -956,18 +978,18 @@ freq.sp$Year <- as.factor(freq.sp$Year)
 freq.bogbean <- freq.sp %>% 
    filter(Assemblage == "Bogbean") %>% 
    filter(Species %in% c("METR3", "MYSC", "MEAQ", "BICE", "LYSA2", "LYTH2")) %>% 
-   mutate(Species = recode(Species, "METR3" = "Menyanthes trifoliata", "MYSC" = "Myosotis scorpiodes", "MEAQ" = "Mentha aquatica", "BICE" = "Bidens cernua", "LYSA2" = "Lythrum salicaria", "LYTH2" = "Lysimachia thyrsiflora"))
+   mutate(Species = recode(Species, "METR3" = "Menyanthes trifoliata", "MYSC" = "Myosotis scorpiodes*", "MEAQ" = "Mentha aquatica*", "BICE" = "Bidens cernua", "LYSA2" = "Lythrum salicaria*", "LYTH2" = "Lysimachia thyrsiflora"))
 
 freq.fescue <- freq.sp %>% 
    filter(Assemblage == "Fescue") %>% 
    filter(Species %in% c("FEAR3", "SALUL",  "SIHE4", "POPA2", "PHAR3",  "AGST2")) %>% 
-    mutate(Species = recode(Species, "FEAR3" = "Festuca arundinacea", "SALUL" = "Salix lasiandra",  "SIHE4" = "Sidalcia hendersonii", "POPA2" = "Poa palustris", "PHAR3" = "Phalaris arundinacea", "AGST2" = "Agrostis stolonifera")) 
+    mutate(Species = recode(Species, "FEAR3" = "Festuca arundinacea*", "SALUL" = "Salix lasiandra",  "SIHE4" = "Sidalcia hendersonii", "POPA2" = "Poa palustris", "PHAR3" = "Phalaris arundinacea*", "AGST2" = "Agrostis stolonifera*")) 
 
 freq.sedge <- freq.sp %>% 
    filter(Assemblage == "Sedge") %>% 
    filter(Species %in% c("CALY3", "SALA2", "SCTA2", "AGST2", "IMCA")) %>% 
     mutate(Species = recode(Species, "CALY3" = "Carex lyngbyei", "SALA2" = "Sagittaria latifolia", "SCTA2" = "Schoenoplectus tabernaemontani",
-                           "AGST2" = "Agrostis stolonifera", "IMCA" = "Impatiens capensis"))
+                           "AGST2" = "Agrostis stolonifera*", "IMCA" = "Impatiens capensis"))
 
 
 
@@ -987,7 +1009,8 @@ freq.col <- c("#00441B", "#238B45" ,"#66C2A4")
 col.bogbean <- ggplot(freq.bogbean, aes(x = Species, y = mean_cover, fill = Year)) +
   geom_bar(stat="identity", position = position_dodge(width = 0.5)) + theme_classic() +
   labs(y = "", x = "") +
-  theme(axis.text.x = element_text(size = 12, angle = 30, hjust = 1)) +
+  theme(axis.text.x = element_text(size = 12, angle = 30, hjust = 1), strip.text = element_text(
+    size = 12)) +
   scale_fill_manual(values = freq.col) +
   facet_grid(.~ Assemblage)
 col.bogbean
@@ -995,7 +1018,8 @@ col.bogbean
 col.sedge <- ggplot(freq.sedge, aes(x = Species, y = mean_cover, fill = Year)) +
   geom_bar(stat="identity", position = position_dodge(width = 0.5)) + theme_classic() +
   labs(y = "", x = "") +
-  theme(axis.text.x = element_text(size = 12, angle = 30, hjust = 1)) +
+  theme(axis.text.x = element_text(size = 12, angle = 30, hjust = 1), strip.text = element_text(
+    size = 12)) +
   scale_fill_manual(values = freq.col) +
   facet_grid(.~ Assemblage)
 col.sedge
@@ -1003,7 +1027,8 @@ col.sedge
 col.fescue <- ggplot(freq.fescue, aes(x = Species, y = mean_cover, fill = Year)) +
   geom_bar(stat="identity", position = position_dodge(width = 0.5)) + theme_classic() +
   labs(y = "", x = "") +
-  theme(axis.text.x = element_text(size = 12, angle = 30, hjust = 1)) +
+  theme(axis.text.x = element_text(size = 12, angle = 30, hjust = 1), strip.text = element_text(
+    size = 12)) +
   scale_fill_manual(values = freq.col) +
   facet_grid(.~ Assemblage)
 col.fescue
@@ -1025,7 +1050,7 @@ freq.bar
 ```
 
 
-```{r summary tables}
+```{r summary tables - DEL}
 ## Want: table with Assemblage, year, N plots and N species per assemblage
 
 # Year    Sedge                     Bogbean             Fescue
