@@ -285,7 +285,7 @@ d2019_bray <-  as.dendrogram(d2019_bray)
   
 braycol19 <- c("#0072B2", "#009E73", "#E69F00")
 dendbray2019 <-  as.dendrogram(d2019_bray) %>%
-   set("branches_lwd", 2) %>% # Branches line width
+   set("branches_lwd", 1) %>% # Branches line width
    set("branches_k_color", braycol19, k=3) %>% # Color branches by groups
     set("labels", c()) #remove plot ID labels
    #set("labels_cex", 0.5) # Change label size
@@ -309,7 +309,7 @@ d1999_bray <- d1999_select %>%
 
 braycol99 <- c("#0072B2", "#E69F00", "#009E73")
 dendbray1999 <-  as.dendrogram(d1999_bray) %>%
-   set("branches_lwd", 2) %>% # Branches line width
+   set("branches_lwd", 1) %>% # Branches line width
    set("branches_k_color", braycol99, k = 3) %>% # Color branches by groups
    set("labels", c()) #remove plot ID labels
 
@@ -332,7 +332,7 @@ d1979_bray <- d1979_select %>%
 
 braycol79 <- c("#009E73", "#0072B2", "#E69F00")
 dendbray1979 <-  as.dendrogram(d1979_bray) %>%
-   set("branches_lwd", 2) %>% # Branches line width
+   set("branches_lwd", 1) %>% # Branches line width
    set("branches_k_color", braycol79, k = 3) %>% # Color branches by groups
     set("labels", c()) #remove plot ID labels
 
@@ -464,13 +464,13 @@ unique(join_40$Species)
 sp_table <- join_40 %>%
   pivot_wider(names_from = "Year", values_from = "mean_cover") %>%
   filter_at(vars(`1979`, `1999`, `2019`), any_vars(.>0)) %>% 
-  mutate(Status = ifelse(Species == c("AGST2", "CIAR4", "FEAR3", "IRPS", "LYEU", "LYSA2", "MEAQ", "MEAR", "MYSC", "PHAR3", "RUCO2"), "Non-native",
-                ifelse(Species == c("Galium_sp", "Poaceae_misc", "Asteraceae_misc", "Carex_sp1", "Festuca_sp", "Salix_sp"), "Unknown", "Native"))) %>%
+  mutate(Status = ifelse(Species %in% c("AGST2", "CIAR4", "FEAR3", "IRPS", "LYEU", "LYSA2", "MEAQ", "MEAR", "MYSC", "PHAR3", "RUCO2"), "Non-native",
+                ifelse(Species %in% c("Galium_sp", "Poaceae_misc", "Asteraceae_misc", "Carex_sp1", "Festuca_sp", "Salix_sp"), "Unknown", "Native"))) %>%
   mutate(Species = recode(Species, 
             "AGST2" = "Agrostis stolonifera", "ALGE2" = "Alopecurus geniculatus", "ALPL"  = "Alisma plantago aquatica",
             "BICE"  = "Bidens cernua", "CALY3" = "Carex lyngbyei", "CAPAP6" = "Caltha palustris", "DECE"  = "Deschampsia caespitosa",
             "ELPA3" = "Eleocharis palustris", "EQAR"  = "Equisetum arvense", "EQFL"  = "Equisetum fluviatile", "EQPA" = "Equisetum palustre",
-            "EQVA" = "Equisetum variegatum", "FEAR3" = "Festuca arundinacea", "Galium_sp" = "Galium sp.", "GATR3"  ="Galium trifidum",
+            "EQVA" = "Equisetum variegatum", "FEAR3" = "Festuca arundinacea", "Galium_sp" = "Galium sp.", "GATR2"  ="Galium trifidum",
             "HYSC5"  = "Hypericum scouleri", "IMCA" = "Impatiens capensis", "IRPS"  = "Iris pseudocorus", "JUAC" = "Juncus acuminatus",
             "JUAR"  = "Juncus articulatus", "JUOX" = "Juncus oxymeris", "LAPA4" = "Lathyrus palustris", "LEOR"  = "Leersia oryzoides",
             "LIOC"  = "Lilaeopsis occidentalis","LYAM3" = "Lysichiton americanum","LYEU" = "Lycopus europaeus","LYSA2" =  "Lythrum salicaria",
@@ -490,6 +490,93 @@ sp_table <- join_40 %>%
 #write.csv(sp_table, "species_table_pct.csv")
 
 ```
+
+```{r native/exotic richness over time}
+
+unique(join_40$Species)
+
+endemic <- join_40 %>% 
+  mutate(endemic = ifelse(Species %in% c("Asteraceae_misc", "Carex_sp1", "Carex_sp2", "Festuca_sp", "Galium_sp", "Poaceae_misc", "Salix_sp"), "unknown",
+                   ifelse(Species %in% c("AGST2", "CIAR4", "FEAR3", "IMCA", "IRPS", "LYEU", "LYSA2", "MEAQ", "MEAR4", "MYSC", "PHAR3", "POTR2", "POHY", "RUCO2", "SOAR2"), "exotic", "native"))) %>% 
+  left_join(join_40) %>% 
+  filter_if(is.numeric, all_vars((.) != 0))
+  
+#View(endemic)
+
+rich_all <- endemic %>% 
+        group_by(Year) %>% 
+        dplyr::summarize(native_rich = length(endemic[endemic == "native"]), 
+            exotic_rich = length(endemic[endemic == "exotic"]), 
+            unknown_rich = length(endemic[endemic == "unknown"]), 
+            native_cover = mean(mean_cover[endemic == "native"]), 
+            exotic_cover = mean(mean_cover[endemic == "exotic"]), 
+            unknown_cover = mean(mean_cover[endemic == "unknown"])) %>% 
+        mutate(Assemblage = "Total") %>% 
+        relocate(Assemblage, .after = Year) %>% 
+        replace(is.na(.), 0)
+#View(rich_all)
+
+rich_asmbg <- endemic %>% 
+        group_by(Year, Assemblage) %>% 
+        dplyr::summarize(native_rich = length(endemic[endemic == "native"]), 
+            exotic_rich = length(endemic[endemic == "exotic"]), 
+            unknown_rich = length(endemic[endemic == "unknown"]), 
+            native_cover = mean(mean_cover[endemic == "native"]), 
+            exotic_cover = mean(mean_cover[endemic == "exotic"]), 
+            unknown_cover = mean(mean_cover[endemic == "unknown"])) %>% 
+        replace(is.na(.), 0)
+#View(rich_asmbg)
+
+rich <- rich_all %>% 
+        full_join(rich_asmbg, by = c("Year", "Assemblage", "native_rich", "exotic_rich", "unknown_rich", "native_cover", "exotic_cover", "unknown_cover")) %>% 
+        pivot_longer(native_rich:unknown_rich, names_to = "rich_status", values_to = "richness") %>% 
+        pivot_longer(native_cover:unknown_cover, names_to = "cover_status", values_to = "cover")
+#View(rich)
+
+rich$rich_status <- factor(rich$rich_status, 
+                           levels = c("native_rich", "exotic_rich", "unknown_rich"), 
+                           labels = c("Native", "Exotic", "Unknown"))
+rich$Year <- factor(rich$Year)
+
+rich_bar <- rich %>% 
+            ggplot(aes(x = Year, y = richness, fill = rich_status)) +
+            geom_bar(stat="identity", position = position_dodge(width = 1)) +
+            theme_classic() + 
+            labs(y = "Species Richness", 
+                 x = "Year", 
+                 fill = "Species Origin") +
+            theme(axis.text.x = element_text(size = 12, angle = 30, hjust = 1), strip.text = element_text(size = 12)) +
+            facet_grid(. ~ Assemblage) +
+            scale_fill_brewer(palette = "Dark2") 
+rich_bar
+
+          
+rich$cover_status <- factor(rich$cover_status, 
+                            levels = c("native_cover", "exotic_cover", "unknown_cover"),
+                            labels = c("Native", "Exotic", "Unknown"))
+rich$Year <- factor(rich$Year)
+
+cover_bar <- rich %>% 
+            ggplot(aes(x = Year, y = cover, fill = cover_status)) +
+            geom_bar(stat="identity", 
+                     position = position_dodge(width = 1)) +
+            theme_classic() + 
+            facet_grid(. ~ Assemblage) +
+            labs(y = "Mean species cover abundance \n(cover class)", 
+                 x = "Year",
+                 fill = "Species Origin") +
+            theme(text = element_text(size = 12), 
+                  panel.spacing.x = unit(1.25, "lines"), 
+                  axis.text.x = element_text(angle = 25, hjust = 1)) +
+            scale_fill_brewer(palette = "Dark2") 
+cover_bar
+
+library(ggpubr)
+ggarrange(rich_bar, cover_bar, ncol = 1, nrow = 2, common.legend = TRUE, legend="bottom")
+
+
+```
+
 
 ```{r diversity calculations}
 
@@ -1048,6 +1135,27 @@ freq.bar
 
 
 ```
+
+
+```{r all sp mean cover}
+
+year.col <- c("#00441B", "#238B45" ,"#66C2A4")
+
+join_40$Year <- as.factor(join_40$Year)
+
+
+mean.cover <- ggplot(join_40, aes(x = Species, y = mean_cover, fill = Year)) +
+  geom_bar(stat="identity", position = position_dodge(width = 0.5)) + theme_classic() +
+  labs(y = "", x = "") +
+  theme(axis.text.x = element_text(size = 11, angle = 30, hjust = 1), strip.text = element_text(
+    size = 12)) +
+  scale_fill_manual(values = year.col) +
+  facet_grid(Assemblage ~ .)
+mean.cover
+
+
+```
+
 
 
 ```{r summary tables - DEL}
