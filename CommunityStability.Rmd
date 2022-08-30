@@ -18,6 +18,7 @@ library(dplyr)
 library(indicspecies) # indicator species analysis
 library(ggplot2)
 library(dendextend) # dendrogram formatting
+library(ggpubr) # plot panel format
 library(ape)
 library(kableExtra) # for making tables
 library(RColorBrewer)
@@ -1052,82 +1053,105 @@ clock.ann
 
 ```{r indicator bar charts}
 
-# View(clock_sp)
-# x = species, color = year, y = cover class, panel = assemblage
 
 
-freq.sp <- join_40 %>% 
-   filter(Species %in% c("AGST2", "BICE", "CALY3", "DECE", "ELPA3", "EQFL", "EQPA", "EQVA", "FEAR3", 
-                         "GATR3", "IMCA", "JUAR",  "LAPA4", "LYSA2", "LYTH2", "MEAQ", "METR3", "MYSC", 
-                         "PHAR3", "POPA2", "SALA2", "SALUL", "SCTA2", "SIHE4", "TRWO"))  
-freq.sp$Year <- as.factor(freq.sp$Year)
-
-freq.bogbean <- freq.sp %>% 
+# METR, MEAQ, LYSA/SIHE, PHAR/IRPS
+freq.bogbean <- join_40 %>% 
    filter(Assemblage == "Bogbean") %>% 
-   filter(Species %in% c("METR3", "MYSC", "MEAQ", "BICE", "LYSA2", "LYTH2")) %>% 
-   mutate(Species = recode(Species, "METR3" = "Menyanthes trifoliata", "MYSC" = "Myosotis scorpiodes*", "MEAQ" = "Mentha aquatica*", "BICE" = "Bidens cernua", "LYSA2" = "Lythrum salicaria*", "LYTH2" = "Lysimachia thyrsiflora"))
+   filter(Species %in% c("METR3", "MEAQ", "SIHE4", "LYSA2", "PHAR3", "IRPS")) %>% 
+   mutate(Species = factor(Species, 
+                           levels = c("METR3", "MEAQ", "SIHE4", "LYSA2", "PHAR3", "IRPS"), 
+                           labels = c("METR3", "MEAQ", "SIHE4", "LYSA2", "PHAR3", "IRPS"))) %>% 
+   mutate(Species = recode(Species, "METR3" = "Menyanthes trifoliata", "MEAQ" = "Mentha aquatica*", "LYSA2" = "Lythrum salicaria*", "SIHE4" = "Sidalcia hendersonii", "PHAR3" = "Phalaris arundinaceae*", "IRPS" = "Iris pseudocorus*"))
 
-freq.fescue <- freq.sp %>% 
+# FEAR, SALUL (tip for Disc), LYSA/SIHE, PHAR/IRPS 
+freq.fescue <- join_40 %>% 
    filter(Assemblage == "Fescue") %>% 
-   filter(Species %in% c("FEAR3", "SALUL",  "SIHE4", "POPA2", "PHAR3",  "AGST2")) %>% 
-    mutate(Species = recode(Species, "FEAR3" = "Festuca arundinacea*", "SALUL" = "Salix lasiandra",  "SIHE4" = "Sidalcia hendersonii", "POPA2" = "Poa palustris", "PHAR3" = "Phalaris arundinacea*", "AGST2" = "Agrostis stolonifera*")) 
+   filter(Species %in% c("FEAR3", "SALUL", "SIHE4", "LYSA2", "PHAR3", "IRPS")) %>% 
+   mutate(Species = factor(Species, 
+                           levels = c("FEAR3", "SALUL", "SIHE4", "LYSA2", "PHAR3", "IRPS"), 
+                           labels = c("FEAR3", "SALUL", "SIHE4", "LYSA2", "PHAR3", "IRPS"))) %>% 
+  mutate(Species = recode(Species, "FEAR3" = "Festuca arundinacea*", "SALUL" = "Salix lucida",  "SIHE4" = "Sidalcia hendersonii", "LYSA2" = "Lythrum salicaria*", "PHAR3" = "Phalaris arundinaceae*", "IRPS" = "Iris pseudocorus*")) 
 
-freq.sedge <- freq.sp %>% 
+#CALY, SALUL, LYTHE/SIHE, PHAR/IRPS
+freq.sedge <- join_40 %>% 
    filter(Assemblage == "Sedge") %>% 
-   filter(Species %in% c("CALY3", "SALA2", "SCTA2", "AGST2", "IMCA")) %>% 
-    mutate(Species = recode(Species, "CALY3" = "Carex lyngbyei", "SALA2" = "Sagittaria latifolia", "SCTA2" = "Schoenoplectus tabernaemontani",
-                           "AGST2" = "Agrostis stolonifera*", "IMCA" = "Impatiens capensis"))
+   filter(Species %in% c("CALY3", "SALUL", "SIHE4", "LYSA2", "PHAR3",  "IRPS")) %>% 
+   mutate(Species = factor(Species, 
+                           levels = c("CALY3", "SALUL", "SIHE4", "LYSA2", "PHAR3",  "IRPS"), 
+                           labels = c("CALY3", "SALUL", "SIHE4", "LYSA2", "PHAR3",  "IRPS"))) %>% 
+   mutate(Species = recode(Species, "CALY3" = "Carex lyngbyei", "SALUL" = "Salix lucida",  "SIHE4" = "Sidalcia hendersonii", "LYSA2" = "Lythrum salicaria*", "PHAR3" = "Phalaris arundinaceae*", "IRPS" = "Iris pseudocorus*"))
 
 
-
-
-# freq <- ggplot(freq.sp, aes(x = Species, y = mean_cover, fill = Year)) +
-#   geom_col() + theme_classic() +
-#   theme(axis.text.x = element_text(size = 12, angle = 45)) +
-#   scale_fill_brewer(palette = "Greens") +
-#   facet_grid(.~ Assemblage)
-# freq
 
 # brewer.pal(n = 9, name = "BuGn")
 # "#F7FCFD" "#E5F5F9" "#CCECE6" "#99D8C9" "#66C2A4" "#41AE76" "#238B45" "#006D2C" "#00441B"
 freq.col <- c("#00441B", "#238B45" ,"#66C2A4")
 
-
-col.bogbean <- ggplot(freq.bogbean, aes(x = Species, y = mean_cover, fill = Year)) +
-  geom_bar(stat="identity", position = position_dodge(width = 0.5)) + theme_classic() +
+freq.bogbean$Year <- as.factor(freq.bogbean$Year)
+col.bogbean <- ggplot(freq.bogbean, 
+                      aes(x = Species, 
+                          y = mean_cover, 
+                          fill = Year)) +
+  geom_bar(stat="identity", 
+           position = position_dodge(width = 0.5)) + 
+  theme_classic() +
+  expand_limits(y = c(0,4)) +
+  scale_y_continuous(breaks = seq(0,4,0.5)) +
   labs(y = "", x = "") +
-  theme(axis.text.x = element_text(size = 12, angle = 30, hjust = 1), strip.text = element_text(
-    size = 12)) +
+  theme(axis.text.x = element_text(size = 12, angle = 30, hjust = 1), 
+        strip.text = element_text(size = 12)) +
   scale_fill_manual(values = freq.col) +
   facet_grid(.~ Assemblage)
 col.bogbean
 
-col.sedge <- ggplot(freq.sedge, aes(x = Species, y = mean_cover, fill = Year)) +
-  geom_bar(stat="identity", position = position_dodge(width = 0.5)) + theme_classic() +
+freq.sedge$Year <- as.factor(freq.sedge$Year)
+col.sedge <- ggplot(freq.sedge, 
+                    aes(x = Species, 
+                        y = mean_cover, 
+                        fill = Year)) +
+  geom_bar(stat="identity", 
+           position = position_dodge(width = 0.5)) + 
+  theme_classic() +
+  expand_limits(y = c(0,4)) +
+  scale_y_continuous(breaks = seq(0,4,0.5)) +
   labs(y = "", x = "") +
-  theme(axis.text.x = element_text(size = 12, angle = 30, hjust = 1), strip.text = element_text(
-    size = 12)) +
+  theme(axis.text.x = element_text(size = 12, angle = 30, hjust = 1), 
+        strip.text = element_text(size = 12)) +
   scale_fill_manual(values = freq.col) +
   facet_grid(.~ Assemblage)
 col.sedge
 
-col.fescue <- ggplot(freq.fescue, aes(x = Species, y = mean_cover, fill = Year)) +
-  geom_bar(stat="identity", position = position_dodge(width = 0.5)) + theme_classic() +
+freq.fescue$Year <- as.factor(freq.fescue$Year)
+col.fescue <- ggplot(freq.fescue, 
+                     aes(x = Species, 
+                         y = mean_cover, 
+                         fill = Year)) +
+  geom_bar(stat="identity", 
+           position = position_dodge(width = 0.5)) + 
+  theme_classic() +
+  expand_limits(y = c(0,4)) +
+  scale_y_continuous(breaks = seq(0,4,0.5)) +
   labs(y = "", x = "") +
-  theme(axis.text.x = element_text(size = 12, angle = 30, hjust = 1), strip.text = element_text(
-    size = 12)) +
+  theme(axis.text.x = element_text(size = 12, angle = 30, hjust = 1), 
+        strip.text = element_text(size = 12)) +
   scale_fill_manual(values = freq.col) +
   facet_grid(.~ Assemblage)
 col.fescue
 
-
-## panel format w/ ggpubr
-library(ggpubr)
-freq.panel <- ggarrange(col.sedge, col.fescue, col.bogbean,
-          ncol = 1, nrow = 3, align = "hv") 
+freq.panel <- ggarrange(col.sedge, 
+                        col.fescue, 
+                        col.bogbean,
+                        common.legend = TRUE, 
+                        legend = "right",
+                        ncol = 1, nrow = 3, align = "hv") 
 freq.panel
 
-freq.bar <- annotate_figure(freq.panel, left = text_grob("Cover abundance class (mean)", size = 20, rot = 90, hjust = .5, vjust = 1), bottom = text_grob("Significant Indicator Species", size = 20))
+freq.bar <- annotate_figure(freq.panel, 
+                            left = text_grob("Cover abundance class (mean)", 
+                                             size = 20, rot = 90, hjust = .5, vjust = 1), 
+                            bottom = text_grob("Species of interest", 
+                                               size = 20))
 freq.bar
 
 #ggsave("fig-frequency-bar.jpg", freq.bar, width = 12, height = 16)
