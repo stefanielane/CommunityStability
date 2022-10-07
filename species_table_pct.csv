@@ -1,163 +1,173 @@
-Assemblage,Status,Species,1979,1999,2019,Percent Change (1979-2019)
-Bogbean,Non-native,Mentha arvensis,0.47,0.00,0.07,-84.9
-,,Myosotis scorpiodes,0.68,0.22,0.21,-68.7
-,,Agrostis stolonifera,3.21,1.50,1.29,-60.0
-,,Lythrum salicaria,1.11,1.17,0.61,-45.1
-,,Rumex conglomeratus,0.05,0.00,0.04,-32.1
-,,Mentha aquatica,0.37,2.28,1.79,384.7
-,,Iris pseudocorus,0.00,0.33,0.21,+
-,,Lycopus europaeus,0.00,0.00,0.04,+
-,,Phalaris arundinacea,0.00,0.06,0.04,+
-,,Festuca arundinacea,0.00,0.17,0.00,NA
-,Native,Alisma plantago aquatica,0.16,0.11,0.00,-100.0
-,,Alopecurus geniculatus,0.05,0.00,0.00,-100.0
-,,Deschampsia caespitosa,0.26,0.22,0.00,-100.0
-,,Equisetum fluviatile,1.37,1.17,0.00,-100.0
-,,Leersia oryzoides,0.26,0.33,0.00,-100.0
-,,Lilaeopsis occidentalis,0.21,0.00,0.00,-100.0
-,,Oenanthe sarmentosa,0.63,0.11,0.00,-100.0
-,,Poa trivialis,0.11,0.00,0.00,-100.0
-,,Sium suave,0.63,0.17,0.00,-100.0
-,,Caltha palustris,0.95,0.22,0.07,-92.5
-,,Bidens cernua,0.84,0.17,0.14,-83.0
-,,Trifolium wormskjoldii,0.95,0.11,0.18,-81.2
-,,Schoenoplectus tabernaemontani,0.16,0.00,0.07,-54.8
-,,Eleocharis palustris,0.63,0.78,0.39,-37.8
-,,Symphotrichum subspicatum,0.47,0.33,0.32,-32.1
-,,Juncus oxymeris,0.05,0.11,0.04,-32.1
-,,Platanthera dilatata,0.05,0.06,0.04,-32.1
-,,Menyanthes trifoliata,3.84,3.06,3.00,-21.9
-,,Lysimachia thyrsiflora,0.53,0.22,0.57,8.6
-,,Juncus articulatus,0.26,0.39,0.29,8.6
-,,Sidalcia hendersonii,0.05,0.00,0.07,35.7
-,,Carex lyngbyei,0.47,0.33,1.00,111.1
-,,Rumex occidentalis,0.05,0.11,0.14,171.4
-,,Potentilla anserina-pacifica,0.26,1.00,1.07,307.1
-,,Equisetum arvense,0.00,0.00,0.64,+
-,,Galium trifidum,0.00,0.00,0.39,+
-,,Hypericum scouleri,0.00,0.00,0.04,+
-,,Impatiens capensis,0.00,0.44,0.32,+
-,,Juncus acuminatus,0.00,0.00,0.04,+
-,,Lathyrus palustris,0.00,0.11,0.50,+
-,,Lysichiton americanum,0.00,0.00,0.07,+
-,,Salix lasiandra,0.00,0.61,0.50,+
-,,Salix scouleriana,0.00,0.00,0.04,+
-,,Typha latifolia,0.00,0.28,0.25,+
-,,Equisetum palustre,0.00,0.11,0.00,NA
-,,Equisetum variegatum,0.00,0.11,0.00,NA
-,,Galium sp.,0.00,0.06,0.00,NA
-,,Poa palustris,0.00,0.50,0.00,NA
-,,Poaceae sp.,0.00,0.28,0.00,NA
-,,Sagittaria latifolia,0.00,0.17,0.00,NA
-,,,,,,
-Assemblage,Status,Species,1979,1999,2019,Percent Change (1979-2019)
-Fescue,Unknown,Festuca sp.,0.03,0.00,0.00,-100.0
-,Non-native,Mentha aquatica,0.31,0.09,0.00,-100.0
-,,Myosotis scorpiodes,0.31,0.03,0.00,-100.0
-,,Mentha arvensis,0.17,0.24,0.06,-67.8
-,,Festuca arundinacea,1.55,0.91,0.72,-53.5
-,,Lythrum salicaria,0.38,0.58,0.44,17.2
-,,Agrostis stolonifera,0.34,0.82,0.61,77.2
-,,Phalaris arundinacea,0.07,0.15,1.06,1430.6
-,,Cirsium arvense,0.00,0.03,0.06,+
-,,Iris pseudocorus,0.00,0.15,0.22,+
-,,Lycopus europaeus,0.00,0.00,0.06,+
-,Native,Alisma plantago aquatica,0.10,0.18,0.00,-100.0
-,,Alopecurus geniculatus,0.03,0.00,0.00,-100.0
-,,Bidens cernua,0.21,0.52,0.00,-100.0
-,,Deschampsia caespitosa,0.62,0.09,0.00,-100.0
-,,Dulichium arundinaceum,0.07,0.00,0.00,-100.0
-,,Eleocharis palustris,0.97,0.33,0.00,-100.0
-,,Equisetum palustre,0.76,0.09,0.00,-100.0
-,,Galium trifidum,0.03,0.00,0.00,-100.0
-,,Hypericum formosum,0.10,0.00,0.00,-100.0
-,,Juncus articulatus,0.52,0.06,0.00,-100.0
-,,Leersia oryzoides,0.14,0.24,0.00,-100.0
-,,Lilaeopsis occidentalis,0.17,0.00,0.00,-100.0
-,,Mimulus guttatus,0.03,0.00,0.00,-100.0
-,,Oenanthe sarmentosa,0.17,0.30,0.00,-100.0
-,,Platanthera dilatata,0.21,0.03,0.00,-100.0
-,,Poa palustris,0.55,1.73,0.00,-100.0
-,,Poa trivialis,0.31,0.00,0.00,-100.0
-,,Polygonum hydropiper,0.03,0.00,0.00,-100.0
-,,Sagittaria latifolia,0.03,0.15,0.00,-100.0
-,,Salix sp.,0.03,0.00,0.00,-100.0
-,,Sium suave,0.14,0.15,0.00,-100.0
-,,Symphotrichum subspicatum,0.59,0.24,0.00,-100.0
-,,Trifolium wormskjoldii,0.69,0.55,0.00,-100.0
-,,Menyanthes trifoliata,1.86,1.33,0.06,-97.0
-,,Caltha palustris,0.66,0.39,0.06,-91.5
-,,Salix lasiandra,1.00,0.39,0.11,-88.9
-,,Carex lyngbyei,0.76,1.42,0.11,-85.4
-,,Potentilla anserina-pacifica,0.48,0.64,0.22,-54.0
-,,Sidalcia hendersonii,0.41,0.18,0.22,-46.3
-,,Lysimachia thyrsiflora,0.10,0.33,0.06,-46.3
-,,Typha latifolia,0.69,0.36,0.44,-35.6
-,,Hordeum brachyantherum,0.17,0.00,0.11,-35.6
-,,Equisetum fluviatile,0.62,0.36,0.44,-28.4
-,,Schoenoplectus tabernaemontani,0.07,0.15,0.06,-19.4
-,,Lathyrus palustris,0.55,0.18,0.56,0.7
-,,Rumex occidentalis,0.07,0.15,0.11,61.1
-,,Impatiens capensis,0.28,0.42,0.61,121.5
-,,Equisetum arvense,0.00,0.00,0.39,+
-,,Juncus effusus,0.00,0.00,0.06,+
-,,Lysichiton americanum,0.00,0.00,0.11,+
-,,Myrica gale,0.00,0.00,0.22,+
-,,Salix scouleriana,0.00,0.00,0.17,+
-,,Asteracea sp.,0.00,0.03,0.00,NA
-,,Carex sp.,0.00,0.06,0.00,NA
-,,Galium sp.,0.00,0.03,0.00,NA
-,,Juncus oxymeris,0.00,0.09,0.00,NA
-,,Salix sitchensis,0.00,0.03,0.00,NA
-,,,,,,
-Assemblage,Status,Species,1979,1999,2019,Percent Change (1979-2019)
-Sedge,Unknown,Galium sp.,0.00,0.03,0.00,NA
-,Non-native,Myosotis scorpiodes,0.03,0.00,0.00,-100.0
-,,Mentha arvensis,0.29,0.16,0.04,-87.9
-,,Agrostis stolonifera,1.85,2.32,1.25,-32.5
-,,Lythrum salicaria,0.26,0.26,0.39,48.4
-,,Festuca arundinacea,0.09,0.10,0.18,102.4
-,,Iris pseudocorus,0.00,0.13,0.25,+
-,,Lycopus europaeus,0.00,0.00,0.11,+
-,,Mentha aquatica,0.00,0.16,0.54,+
-,,Phalaris arundinacea,0.00,0.00,0.07,+
-,,Cirsium arvense,0.00,0.03,0.00,NA
-,Native,Alisma plantago aquatica,0.35,0.06,0.00,-100.0
-,,Deschampsia caespitosa,0.21,0.00,0.00,-100.0
-,,Leersia oryzoides,0.18,0.19,0.00,-100.0
-,,Lilaeopsis occidentalis,0.06,0.10,0.00,-100.0
-,,Mimulus guttatus,0.09,0.00,0.00,-100.0
-,,Oenanthe sarmentosa,0.71,0.39,0.00,-100.0
-,,Platanthera dilatata,0.09,0.03,0.00,-100.0
-,,Poa palustris,1.00,0.23,0.00,-100.0
-,,Puccinella pauciflora,0.03,0.00,0.00,-100.0
-,,Sium suave,0.59,0.19,0.00,-100.0
-,,Caltha palustris,1.09,0.48,0.04,-96.7
-,,Equisetum fluviatile,0.88,0.58,0.04,-96.0
-,,Schoenoplectus tabernaemontani,0.71,0.10,0.11,-84.8
-,,Trifolium wormskjoldii,0.41,0.13,0.07,-82.7
-,,Sagittaria latifolia,0.41,0.10,0.11,-74.0
-,,Bidens cernua,0.47,0.13,0.21,-54.5
-,,Eleocharis palustris,0.79,0.35,0.39,-50.5
-,,Menyanthes trifoliata,0.32,0.68,0.18,-44.8
-,,Carex lyngbyei,2.97,3.03,1.93,-35.1
-,,Typha latifolia,0.59,0.35,0.43,-27.1
-,,Symphotrichum subspicatum,0.29,0.13,0.25,-15.0
-,,Rumex occidentalis,0.12,0.16,0.11,-8.9
-,,Lysimachia thyrsiflora,0.09,0.00,0.11,21.4
-,,Sidalcia hendersonii,0.09,0.10,0.21,142.9
-,,Potentilla anserina-pacifica,0.29,0.74,0.79,167.1
-,,Rumex_conglomeratus,0.03,0.00,0.11,264.3
-,,Lathyrus palustris,0.09,0.26,0.46,426.2
-,,Impatiens capensis,0.15,1.06,0.86,482.9
-,,Salix lasiandra,0.03,0.03,0.29,871.4
-,,Equisetum arvense,0.00,0.00,0.68,+
-,,Galium palustre,0.00,0.00,0.04,+
-,,Galium trifidum,0.00,0.00,0.07,+
-,,Hypericum scouleri,0.00,0.00,0.07,+
-,,Juncus articulatus,0.00,0.00,0.04,+
-,,Juncus oxymeris,0.00,0.00,0.04,+
-,,Scirpus microcarpus,0.00,0.00,0.07,+
-,,Equisetum palustre,0.00,0.19,0.00,NA
-,,Lysichiton americanum,0.00,0.03,0.00,NA
-,,Salix sitchensis,0.00,0.06,0.00,NA
+"","Assemblage","Species","1979","1999","2019","Status"
+"1","Bogbean","Agrostis_stolonifera",3.21052631578947,1.5,1.28571428571429,"Exotic"
+"2","Bogbean","Alisma_plantago.aquatica",0.157894736842105,0.111111111111111,0,"Exotic"
+"3","Bogbean","Alopecurus_geniculatus",0.0526315789473684,0,0,"Native"
+"4","Bogbean","Bidens_cernua",0.842105263157895,0.166666666666667,0.142857142857143,"Native"
+"5","Bogbean","Caltha_palustris",0.947368421052632,0.222222222222222,0.0714285714285714,"Native"
+"6","Bogbean","Carex_lyngbei",0.473684210526316,0,0,"Native"
+"7","Bogbean","Carex_lyngbyei",0,0.333333333333333,1,"Native"
+"8","Bogbean","Deschampsia_caespitosa",0.263157894736842,0.222222222222222,0,"Native"
+"9","Bogbean","Eleocharis_palustris",0.631578947368421,0.777777777777778,0.392857142857143,"Native"
+"10","Bogbean","Equisetum_arvense",0,0,0.642857142857143,"Native"
+"11","Bogbean","Equisetum_fluviatile",1.36842105263158,1.16666666666667,0,"Native"
+"12","Bogbean","Equisetum_palustre",0,0.111111111111111,0,"Native"
+"13","Bogbean","Equisetum_variegatum",0,0.111111111111111,0,"Native"
+"14","Bogbean","Festuca_arundinacea",0,0.166666666666667,0,"Exotic"
+"15","Bogbean","Galium_sp",0,0.0555555555555556,0,"Unknown"
+"16","Bogbean","Galium_trifidum",0,0,0.392857142857143,"Native"
+"17","Bogbean","Grass_unid",0,0.277777777777778,0,"Native"
+"18","Bogbean","Hypericum_scouleri",0.368421052631579,0,0.0357142857142857,"Native"
+"19","Bogbean","Impatiens_capensis",0,0.444444444444444,0.321428571428571,"Native"
+"20","Bogbean","Iris_pseudacorus",0,0,0.214285714285714,"Exotic"
+"21","Bogbean","Iris_pseudocorus",0,0.333333333333333,0,"Native"
+"22","Bogbean","Juncus_acuminatus",0,0,0.0357142857142857,"Native"
+"23","Bogbean","Juncus_articulatus",0.263157894736842,0.388888888888889,0.285714285714286,"Native"
+"24","Bogbean","Juncus_oxymeris",0.0526315789473684,0.111111111111111,0.0357142857142857,"Native"
+"25","Bogbean","Lathyrus_palustris",0,0.111111111111111,0.5,"Native"
+"26","Bogbean","Leersia_oryzoides",0.263157894736842,0.333333333333333,0,"Native"
+"27","Bogbean","Lilaeopsis_occidentalis",0.210526315789474,0,0,"Native"
+"28","Bogbean","Lycopus_europaeus",0,0,0.0357142857142857,"Exotic"
+"29","Bogbean","Lysichiton_americanus",0,0,0.0714285714285714,"Native"
+"30","Bogbean","Lysimachia_thyrsiflora",0.526315789473684,0.222222222222222,0.571428571428571,"Native"
+"31","Bogbean","Lythrum_salicaria",1.10526315789474,1.16666666666667,0.607142857142857,"Exotic"
+"32","Bogbean","Mentha_aquatica",0,2.27777777777778,1.78571428571429,"Exotic"
+"33","Bogbean","Mentha_arvensis",0.473684210526316,0,0.0714285714285714,"Exotic"
+"34","Bogbean","Menyanthes_trifoliata",3.84210526315789,3.05555555555556,3,"Native"
+"35","Bogbean","Myosotis_scorpiodes",0,0.222222222222222,0,"Native"
+"36","Bogbean","Myosotis_scorpioides",0.684210526315789,0,0.214285714285714,"Exotic"
+"37","Bogbean","Oenanthe_sarmentosa",0.631578947368421,0.111111111111111,0,"Native"
+"38","Bogbean","Phalaris_arundinacea",0,0.0555555555555556,0.0357142857142857,"Exotic"
+"39","Bogbean","Platanthera_dilatata",0.0526315789473684,0.0555555555555556,0,"Native"
+"40","Bogbean","Platanthera_dilatata_var_dilatata",0,0,0.0357142857142857,"Native"
+"41","Bogbean","Poa_cf_palustris",0,0.5,0,"Native"
+"42","Bogbean","Poa_trivialis",0.105263157894737,0,0,"Native"
+"43","Bogbean","Potentilla_pacifica",0.263157894736842,1,1.07142857142857,"Native"
+"44","Bogbean","Rumex_conglomeratus",0.0526315789473684,0,0.0357142857142857,"Exotic"
+"45","Bogbean","Rumex_occidentalis",0.0526315789473684,0.111111111111111,0.142857142857143,"Native"
+"46","Bogbean","Sagittaria_latifolia",0,0.166666666666667,0,"Native"
+"47","Bogbean","Salix_lasiandra",0,0.611111111111111,0.5,"Native"
+"48","Bogbean","Salix_scouleriana",0,0,0.0357142857142857,"Native"
+"49","Bogbean","Schoenoplectus_tabernaemontani",0.157894736842105,0,0.0714285714285714,"Native"
+"50","Bogbean","Sidalcea_hendersonii",0.0526315789473684,0,0.0714285714285714,"Native"
+"51","Bogbean","Sium_suave",0.631578947368421,0.166666666666667,0,"Native"
+"52","Bogbean","Symphotrichum_subspicatum",0.473684210526316,0.333333333333333,0.321428571428571,"Native"
+"53","Bogbean","Trifolium_wormskioldii",0.947368421052632,0.111111111111111,0.178571428571429,"Native"
+"54","Bogbean","Typha_latifolia",0,0.277777777777778,0.25,"Native"
+"55","Fescue","Agrostis_stolonifera",0.344827586206897,0.818181818181818,0.611111111111111,"Exotic"
+"56","Fescue","Alisma_plantago.aquatica",0.103448275862069,0.181818181818182,0,"Exotic"
+"57","Fescue","Alopecurus_geniculatus",0.0344827586206897,0,0,"Native"
+"58","Fescue","Bidens_cernua",0.206896551724138,0.515151515151515,0,"Native"
+"59","Fescue","Caltha_palustris",0.655172413793103,0.393939393939394,0.0555555555555556,"Native"
+"60","Fescue","Carex_lyngbei",0.758620689655172,0,0,"Native"
+"61","Fescue","Carex_lyngbyei",0,1.42424242424242,0.111111111111111,"Native"
+"62","Fescue","Carex_sp1",0,0.0606060606060606,0,"Unknown"
+"63","Fescue","Cirsium_arvense",0,0.0303030303030303,0.0555555555555556,"Exotic"
+"64","Fescue","Composite_unidentif",0,0.0303030303030303,0,"Native"
+"65","Fescue","Deschampsia_caespitosa",0.620689655172414,0.0909090909090909,0,"Native"
+"66","Fescue","Dulichium_arundinaceum",0.0689655172413793,0,0,"Native"
+"67","Fescue","Eleocharis_palustris",0.96551724137931,0.333333333333333,0,"Native"
+"68","Fescue","Equisetum_arvense",0,0,0.388888888888889,"Native"
+"69","Fescue","Equisetum_fluviatile",0.620689655172414,0.363636363636364,0.444444444444444,"Native"
+"70","Fescue","Equisetum_palustre",0.758620689655172,0.0909090909090909,0,"Native"
+"71","Fescue","Festuca_arundinacea",1.55172413793103,0.909090909090909,0.722222222222222,"Exotic"
+"72","Fescue","Festuca_sp",0.0344827586206897,0,0,"Unknown"
+"73","Fescue","Galium_sp",0,0.0303030303030303,0,"Unknown"
+"74","Fescue","Galium_trifidum",0.0344827586206897,0,0,"Native"
+"75","Fescue","Hordeum_brachyantherum",0.172413793103448,0,0.111111111111111,"Native"
+"76","Fescue","Hypericum_scouleri",0.310344827586207,0,0,"Native"
+"77","Fescue","Impatiens_capensis",0.275862068965517,0.424242424242424,0.611111111111111,"Native"
+"78","Fescue","Iris_pseudacorus",0,0,0.222222222222222,"Exotic"
+"79","Fescue","Iris_pseudocorus",0,0.151515151515152,0,"Native"
+"80","Fescue","Juncus_articulatus",0.517241379310345,0.0606060606060606,0,"Native"
+"81","Fescue","Juncus_effusus",0,0,0.0555555555555556,"Native"
+"82","Fescue","Juncus_oxymeris",0,0.0909090909090909,0,"Native"
+"83","Fescue","Lathyrus_palustris",0.551724137931034,0.181818181818182,0.555555555555556,"Native"
+"84","Fescue","Leersia_oryzoides",0.137931034482759,0.242424242424242,0,"Native"
+"85","Fescue","Lilaeopsis_occidentalis",0.172413793103448,0,0,"Native"
+"86","Fescue","Lycopus_europaeus",0,0,0.0555555555555556,"Exotic"
+"87","Fescue","Lysichiton_americanus",0,0,0.111111111111111,"Native"
+"88","Fescue","Lysimachia_thyrsiflora",0.103448275862069,0.333333333333333,0.0555555555555556,"Native"
+"89","Fescue","Lythrum_salicaria",0.379310344827586,0.575757575757576,0.444444444444444,"Exotic"
+"90","Fescue","Mentha_aquatica",0.103448275862069,0.0909090909090909,0,"Exotic"
+"91","Fescue","Mentha_arvensis",0.172413793103448,0.242424242424242,0.0555555555555556,"Exotic"
+"92","Fescue","Menyanthes_trifoliata",1.86206896551724,1.33333333333333,0.0555555555555556,"Native"
+"93","Fescue","Mimulus_guttatus",0.0344827586206897,0,0,"Native"
+"94","Fescue","Myosotis_scorpiodes",0,0.0303030303030303,0,"Native"
+"95","Fescue","Myosotis_scorpioides",0.310344827586207,0,0,"Exotic"
+"96","Fescue","Myrica_gale",0,0,0.222222222222222,"Native"
+"97","Fescue","Oenanthe_sarmentosa",0.172413793103448,0.303030303030303,0,"Native"
+"98","Fescue","Phalaris_arundinacea",0.0689655172413793,0.151515151515152,1.05555555555556,"Exotic"
+"99","Fescue","Platanthera_dilatata",0.206896551724138,0.0303030303030303,0,"Native"
+"100","Fescue","Poa_cf_palustris",0,1.72727272727273,0,"Native"
+"101","Fescue","Poa_palustris",0.551724137931034,0,0,"Native"
+"102","Fescue","Poa_trivialis",0.310344827586207,0,0,"Native"
+"103","Fescue","Polygonum_hydropiper",0.0344827586206897,0,0,"Native"
+"104","Fescue","Potentilla_pacifica",0.482758620689655,0.636363636363636,0.222222222222222,"Native"
+"105","Fescue","Rumex_occidentalis",0.0689655172413793,0.151515151515152,0.111111111111111,"Native"
+"106","Fescue","Sagittaria_latifolia",0.0344827586206897,0.151515151515152,0,"Native"
+"107","Fescue","Salix_lasiandra",1,0.393939393939394,0.111111111111111,"Native"
+"108","Fescue","Salix_scouleriana",0,0,0.166666666666667,"Native"
+"109","Fescue","Salix_sitchensis",0,0.0303030303030303,0,"Native"
+"110","Fescue","Salix_sp",0.0344827586206897,0,0,"Unknown"
+"111","Fescue","Schoenoplectus_tabernaemontani",0.0689655172413793,0.151515151515152,0.0555555555555556,"Native"
+"112","Fescue","Sidalcea_hendersonii",0.413793103448276,0,0.222222222222222,"Native"
+"113","Fescue","Sidalcia_hendersonii",0,0.181818181818182,0,"Native"
+"114","Fescue","Sium_suave",0.137931034482759,0.151515151515152,0,"Native"
+"115","Fescue","Symphotrichum_subspicatum",0.586206896551724,0.242424242424242,0,"Native"
+"116","Fescue","Trifolium_wormskioldii",0.689655172413793,0.545454545454545,0,"Native"
+"117","Fescue","Typha_latifolia",0.689655172413793,0.363636363636364,0.444444444444444,"Native"
+"118","Sedge","Agrostis_stolonifera",1.85294117647059,2.32258064516129,1.25,"Exotic"
+"119","Sedge","Alisma_plantago.aquatica",0.352941176470588,0.0645161290322581,0,"Exotic"
+"120","Sedge","Bidens_cernua",0.470588235294118,0.129032258064516,0.214285714285714,"Native"
+"121","Sedge","Caltha_palustris",1.08823529411765,0.483870967741935,0.0357142857142857,"Native"
+"122","Sedge","Carex_lyngbei",2.97058823529412,0,0,"Native"
+"123","Sedge","Carex_lyngbyei",0,3.03225806451613,1.92857142857143,"Native"
+"124","Sedge","Cirsium_arvense",0,0.032258064516129,0,"Exotic"
+"125","Sedge","Deschampsia_caespitosa",0.205882352941176,0,0,"Native"
+"126","Sedge","Eleocharis_palustris",0.794117647058823,0.354838709677419,0.392857142857143,"Native"
+"127","Sedge","Equisetum_arvense",0,0,0.678571428571429,"Native"
+"128","Sedge","Equisetum_fluviatile",0.882352941176471,0.580645161290323,0.0357142857142857,"Native"
+"129","Sedge","Equisetum_palustre",0,0.193548387096774,0,"Native"
+"130","Sedge","Festuca_arundinacea",0.0882352941176471,0.0967741935483871,0.178571428571429,"Exotic"
+"131","Sedge","Galium_palustre",0,0,0.0357142857142857,"Native"
+"132","Sedge","Galium_sp",0,0.032258064516129,0,"Unknown"
+"133","Sedge","Galium_trifidum",0,0,0.0714285714285714,"Native"
+"134","Sedge","Hypericum_scouleri",0,0,0.0714285714285714,"Native"
+"135","Sedge","Impatiens_capensis",0.147058823529412,1.06451612903226,0.857142857142857,"Native"
+"136","Sedge","Iris_pseudacorus",0,0,0.25,"Exotic"
+"137","Sedge","Iris_pseudocorus",0,0.129032258064516,0,"Native"
+"138","Sedge","Juncus_articulatus",0,0,0.0357142857142857,"Native"
+"139","Sedge","Juncus_oxymeris",0,0,0.0357142857142857,"Native"
+"140","Sedge","Lathyrus_palustris",0.0882352941176471,0.258064516129032,0.464285714285714,"Native"
+"141","Sedge","Leersia_oryzoides",0.176470588235294,0.193548387096774,0,"Native"
+"142","Sedge","Lilaeopsis_occidentalis",0.0588235294117647,0,0,"Native"
+"143","Sedge","Llilaeopsis_occidentalis",0,0.0967741935483871,0,"Native"
+"144","Sedge","Lycopus_europaeus",0,0,0.107142857142857,"Exotic"
+"145","Sedge","Lysichiton_americanum",0,0.032258064516129,0,"Native"
+"146","Sedge","Lysimachia_thyrsiflora",0.0882352941176471,0,0.107142857142857,"Native"
+"147","Sedge","Lythrum_salicaria",0.264705882352941,0.258064516129032,0.392857142857143,"Exotic"
+"148","Sedge","Mentha_aquatica",0,0.161290322580645,0.535714285714286,"Exotic"
+"149","Sedge","Mentha_arvensis",0.294117647058824,0.161290322580645,0.0357142857142857,"Exotic"
+"150","Sedge","Menyanthes_trifoliata",0.323529411764706,0.67741935483871,0.178571428571429,"Native"
+"151","Sedge","Mimulus_guttatus",0.0882352941176471,0,0,"Native"
+"152","Sedge","Myosotis_scorpioides",0.0294117647058824,0,0,"Exotic"
+"153","Sedge","Oenanthe_sarmentosa",0.705882352941177,0.387096774193548,0,"Native"
+"154","Sedge","Phalaris_arundinacea",0,0,0.0714285714285714,"Exotic"
+"155","Sedge","Platanthera_dilatata",0.0882352941176471,0.032258064516129,0,"Native"
+"156","Sedge","Poa_cf_palustris",0,0.225806451612903,0,"Native"
+"157","Sedge","Poa_palustris",1,0,0,"Native"
+"158","Sedge","Potentilla_pacifica",0.294117647058824,0.741935483870968,0.785714285714286,"Native"
+"159","Sedge","Puccinellia_pauciflora",0.0294117647058824,0,0,"Native"
+"160","Sedge","Rumex_conglomeratus",0.0294117647058824,0,0.107142857142857,"Exotic"
+"161","Sedge","Rumex_occidentalis",0.117647058823529,0.161290322580645,0.107142857142857,"Native"
+"162","Sedge","Sagittaria_latifolia",0.411764705882353,0.0967741935483871,0.107142857142857,"Native"
+"163","Sedge","Salix_lasiandra",0.0294117647058824,0.032258064516129,0.285714285714286,"Native"
+"164","Sedge","Salix_sitchensis",0,0.0645161290322581,0,"Native"
+"165","Sedge","Schoenoplectus_tabernaemontani",0.705882352941177,0.0967741935483871,0.107142857142857,"Native"
+"166","Sedge","Scirpus_microcarpus",0,0,0.0714285714285714,"Native"
+"167","Sedge","Sidalcea_hendersonii",0.0882352941176471,0,0.214285714285714,"Native"
+"168","Sedge","Sidalcia_hendersonii",0,0.0967741935483871,0,"Native"
+"169","Sedge","Sium_suave",0.588235294117647,0.193548387096774,0,"Native"
+"170","Sedge","Symphotrichum_subspicatum",0.294117647058824,0.129032258064516,0.25,"Native"
+"171","Sedge","Trifolium_wormskioldii",0.411764705882353,0.129032258064516,0.0714285714285714,"Native"
+"172","Sedge","Typha_latifolia",0.588235294117647,0.354838709677419,0.428571428571429,"Native"

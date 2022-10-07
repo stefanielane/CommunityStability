@@ -27,17 +27,43 @@ library(RColorBrewer)
 # approx halfway down the page
 ```
 
-```{r Read data, echo=FALSE}
-d2019 <- read.csv("2019_Lane_BINNED-NRCS.csv")
+```{r Read data & standardize names, echo=FALSE}
+
+d2019 <- read.csv("d2019_formatted.csv")
+# 2019_Lane_BINNED-NRCS.csv
 #view(d2019)
 
-d1999 <- read.csv("1999_Denoth-NRCS.csv") # if first column has a byte order mark
+d99 <- read.csv("d1999_formatted.csv") 
+
+oldnames99 = c("Agrostis_alba","Aster_eatonii", "Mentha_citrata", "Scirpus_validus", "Trifolium_wormskjoldii")
+newnames99 = c("Agrostis_stolonifera","Symphotrichum_subspicatum", "Mentha_aquatica", "Schoenoplectus_tabernaemontani", "Trifolium_wormskioldii")
+
+d1999 <- d99 %>% 
+  rename_at(vars(oldnames99), ~ newnames99) %>% 
+  mutate(Year = 1999)  %>% 
+  relocate(Year)
+
+
+#1999_Denoth-NRCS.csv
+# if first column has a byte order mark
 #colnames(d1999)[1] <- gsub('^...','',colnames(d1999)[1])
 #view(d1999)
 
-d1979 <- read.csv("1979_Bradfield-NRCS.csv") # if first column has a byte order mark
+d79 <- read.csv("d1979_formatted.csv") 
+
+oldnames79 = c("Agrostis_alba","Aster_eatonii", "Galium_cymosum", "Mentha_citrata", "Hypericum_formosum", "Puccinella_pauciflora", "Scirpus_validus", "Trifolium_wormskjoldii")
+newnames79 = c("Agrostis_stolonifera","Symphotrichum_subspicatum", "Galium_trifidum", "Hypericum_scouleri", "Mentha_aquatica", "Puccinellia_pauciflora", "Schoenoplectus_tabernaemontani", "Trifolium_wormskioldii")
+
+d1979 <- d79 %>% 
+  rename_at(vars(oldnames79), ~ newnames79) %>% 
+  mutate(Year = 1979) %>% 
+  relocate(Year)
+# 1979_Bradfield-NRCS.csv
+# if first column has a byte order mark
 #colnames(d1979)[1] <- gsub('^...','',colnames(d1979)[1])
 #view(d1979)
+
+
 
 ```
 
@@ -55,6 +81,7 @@ align79 <- d1979 %>% filter((between(Quadrat, 9,16)) | (between(Quadrat, 20,32))
 
 
 ```
+
 
 
 RQ 1: "Are assemblages still characterized by the same dominant species?
@@ -129,7 +156,7 @@ plot(dend1999, ylab = "Euclidean Distance", main = "1999")
 # 1979
 ###########################
 
-d1979_select <- select(align79, -(Year:Association_Subtype))
+d1979_select <- select(align79, -(Year:Quadrat))
 #ncol(d1979_select) #55
 #view(d1979_select)
 
@@ -164,19 +191,19 @@ plot(dend1979, ylab = "Euclidean Distance", main = "1979")
 
 
 #install.packages("svglite")
-library(svglite)
-
-svglite("Fig3.svg", width=8, height=5)
-par(mfrow = c(1,3), mar = c(6, 5, 5, 3), xpd = TRUE, mgp=c(1.75, .75,  0))
-plot(dend1979, main = "1979")
-mtext(text = "Euclidean Distance", side = 2, line = 3, col = "black")
-plot(dend1999, main = "1999")
-legend("bottom", c("Sedge", "Fescue", "Bogbean"),
-        title = "Assemblage Type", horiz = TRUE, inset = c(0, -0.2),
-        col = c("#009E73", "#E69F00", "#0072B2"), pch = rep(15,2),
-        bty = "n", pt.cex = 1.5, text.col = "black")
-plot(dend2019, main = "2019")
-dev.off()
+# library(svglite)
+# 
+# svglite("Fig3.svg", width=8, height=5)
+# par(mfrow = c(1,3), mar = c(6, 5, 5, 3), xpd = TRUE, mgp=c(1.75, .75,  0))
+# plot(dend1979, main = "1979")
+# mtext(text = "Euclidean Distance", side = 2, line = 3, col = "black")
+# plot(dend1999, main = "1999")
+# legend("bottom", c("Sedge", "Fescue", "Bogbean"),
+#         title = "Assemblage Type", horiz = TRUE, inset = c(0, -0.2),
+#         col = c("#009E73", "#E69F00", "#0072B2"), pch = rep(15,2),
+#         bty = "n", pt.cex = 1.5, text.col = "black")
+# plot(dend2019, main = "2019")
+# dev.off()
 
 ```
 
@@ -445,50 +472,55 @@ RQ2: "Is total species diversity stable within and between assemblage types over
 join_40 <- lst(d1979_grps, d1999_grps, d2019_grps) %>% 
   reduce(full_join) %>% 
   replace(is.na(.), 0) %>% 
-  pivot_longer(AGST2:SCMI2, names_to = "Species", values_to = "Cover_class") %>% 
+  select(-Transect) %>% 
+  pivot_longer(Agrostis_stolonifera:Scirpus_microcarpus, names_to = "Species", values_to = "Cover_class") %>% 
    mutate(Assemblage = ifelse(Association_Type2 == 1, "Sedge",
                       ifelse(Association_Type2 == 2, "Fescue", "Bogbean"))) %>% 
-  select(-Transect, -Association_Type2, -Association_Type, -Association_Subtype) %>% 
+  select(-Association_Type2) %>% 
   group_by(Year, Assemblage, Species) %>% 
   summarize(mean_cover = mean(Cover_class, na.rm = TRUE))
 
+
 #View(join_40)
 
+# extra attempt - want a 'total' option by year for mean_cover
+join_41 <- lst(d1979_grps, d1999_grps, d2019_grps) %>% 
+  reduce(full_join) %>% 
+  replace(is.na(.), 0) %>% 
+  select(-Transect) %>% 
+  pivot_longer(Agrostis_stolonifera:Scirpus_microcarpus, names_to = "Species", values_to = "Cover_class") %>% 
+  select(-Association_Type2) %>% 
+  group_by(Year, Species) %>% 
+  summarize(mean_cover = mean(Cover_class, na.rm = TRUE)) %>% 
+   pivot_wider(names_from = Year, values_from = mean_cover) 
 
 ```
 
 ```{r species abundance table}
 
 # exported table as csv, performed percent change calculations and sorted table in Excel
-unique(join_40$Species)
+#unique(join_40$Species)
 
 sp_table <- join_40 %>%
   pivot_wider(names_from = "Year", values_from = "mean_cover") %>%
   filter_at(vars(`1979`, `1999`, `2019`), any_vars(.>0)) %>% 
-  mutate(Status = ifelse(Species %in% c("AGST2", "CIAR4", "FEAR3", "IRPS", "LYEU", "LYSA2", "MEAQ", "MEAR", "MYSC", "PHAR3", "RUCO2"), "Non-native",
-                ifelse(Species %in% c("Galium_sp", "Poaceae_misc", "Asteraceae_misc", "Carex_sp1", "Festuca_sp", "Salix_sp"), "Unknown", "Native"))) %>%
-  mutate(Species = recode(Species, 
-            "AGST2" = "Agrostis stolonifera", "ALGE2" = "Alopecurus geniculatus", "ALPL"  = "Alisma plantago aquatica",
-            "BICE"  = "Bidens cernua", "CALY3" = "Carex lyngbyei", "CAPAP6" = "Caltha palustris", "DECE"  = "Deschampsia caespitosa",
-            "ELPA3" = "Eleocharis palustris", "EQAR"  = "Equisetum arvense", "EQFL"  = "Equisetum fluviatile", "EQPA" = "Equisetum palustre",
-            "EQVA" = "Equisetum variegatum", "FEAR3" = "Festuca arundinacea", "Galium_sp" = "Galium sp.", "GATR2"  ="Galium trifidum",
-            "HYSC5"  = "Hypericum scouleri", "IMCA" = "Impatiens capensis", "IRPS"  = "Iris pseudocorus", "JUAC" = "Juncus acuminatus",
-            "JUAR"  = "Juncus articulatus", "JUOX" = "Juncus oxymeris", "LAPA4" = "Lathyrus palustris", "LEOR"  = "Leersia oryzoides",
-            "LIOC"  = "Lilaeopsis occidentalis","LYAM3" = "Lysichiton americanum","LYEU" = "Lycopus europaeus","LYSA2" =  "Lythrum salicaria",
-            "LYTH2" = "Lysimachia thyrsiflora","MEAQ"  = "Mentha aquatica","MEAR4" = "Mentha arvensis","METR3" = "Menyanthes trifoliata",
-            "MYSC"  = "Myosotis scorpiodes","OESA" = "Oenanthe sarmentosa","PHAR3" = "Phalaris arundinacea","PLDID"  = "Platanthera dilatata",
-            "Poaceae_misc" = "Poaceae sp.","POPA2" = "Poa palustris","POPA23"  = "Potentilla anserina-pacifica","POTR2" = "Poa trivialis",
-            "RUCO2" = "Rumex conglomeratus", "RUOC3" = "Rumex occidentalis","SALA2"  = "Sagittaria latifolia","SALUL" = "Salix lasiandra",
-            "SASC"  = "Salix scouleriana","SCTA2" = "Schoenoplectus tabernaemontani","SIHE4" = "Sidalcia hendersonii","SISU2" = "Sium suave",
-            "SYSU4"  = "Symphyotrichum subspicatum","TRWO" = "Trifolium wormskjoldii","TYLA"  = "Typha latifolia","Asteraceae_misc" = "Asteracea sp.",
-            "Carex_sp1" = "Carex sp.","CIAR4" = "Cirsium arvense","DUAR3"  = "Dulichium arundinaceum","Festuca_sp" = "Festuca sp.", 
-            "HOBR2" = "Hordeum brachyantherum","HYFO7"  = "Hypericum formosum","JUEF" = "Juncus effusus","MIGU"  = "Mimulus guttatus",
-            "MYGA"  = "Myrica gale","POHY"  = "Polygonum hydropiper","Salix_sp"   = "Salix sp.","SASI2" = "Salix sitchensis",
-            "GAPA3" = "Galium palustre","PUPA3" = "Puccinella pauciflora","SCMI2" =   "Scirpus microcarpus"))
+  mutate(Status = ifelse(Species %in% c("Agrostis_stolonifera", "Alisma_plantago.aquatica", "Cirsium_arvense", "Festuca_arundinacea", "Iris_pseudacorus", "Lycopus_europaeus", "Lythrum_salicaria", "Mentha_aquatica", "Mentha_arvensis", "Myosotis_scorpioides", "Phalaris_arundinacea", "Rumex_conglomeratus"), "Exotic",
+                ifelse(Species %in% c("Galium_sp", "Poaceae_misc", "Asteraceae_misc", "Carex_sp1", "Festuca_sp", "Salix_sp"), "Unknown", "Native"))) 
 
 #view(sp_table)
 
 #write.csv(sp_table, "species_table_pct.csv")
+
+
+sp_table_total <- join_41 %>%
+  # pivot_wider(names_from = "Year", values_from = "mean_cover") %>%
+  # filter_at(vars(`1979`, `1999`, `2019`), any_vars(.>0)) %>% 
+  mutate(Status = ifelse(Species %in% c("Agrostis_stolonifera", "Alisma_plantago.aquatica", "Cirsium_arvense", "Festuca_arundinacea", "Iris_pseudacorus", "Lycopus_europaeus", "Lythrum_salicaria", "Mentha_aquatica", "Mentha_arvensis", "Myosotis_scorpioides", "Phalaris_arundinacea", "Rumex_conglomeratus"), "Exotic",
+                ifelse(Species %in% c("Galium_sp", "Poaceae_misc", "Asteraceae_misc", "Carex_sp1", "Festuca_sp", "Salix_sp"), "Unknown", "Native"))) 
+
+#write.csv(sp_table_total, "species_table_total.csv")
+
+
 
 ```
 
@@ -498,7 +530,7 @@ unique(join_40$Species)
 
 endemic <- join_40 %>% 
   mutate(endemic = ifelse(Species %in% c("Asteraceae_misc", "Carex_sp1", "Carex_sp2", "Festuca_sp", "Galium_sp", "Poaceae_misc", "Salix_sp"), "unknown",
-                   ifelse(Species %in% c("AGST2", "CIAR4", "FEAR3", "IMCA", "IRPS", "LYEU", "LYSA2", "MEAQ", "MEAR4", "MYSC", "PHAR3", "POTR2", "POHY", "RUCO2", "SOAR2"), "exotic", "native"))) %>% 
+                   ifelse(Species %in% c("Agrostis_stolonifera", "Alisma_plantago.aquatica", "Cirsium_arvense", "Festuca_arundinacea", "Impatiens_capensis", "Iris_pseudacorus", "Lycopus_europaeus", "Lythrum_salicaria", "Mentha_aquatica", "Mentha_arvensis", "Myosotis_scorpioides", "Phalaris_arundinacea", "Poa_trivialis", "Polygonum_hydropiper", "Rumex_conglomeratus", "Sonchus_arvensis"), "exotic", "native"))) %>% 
   left_join(join_40) %>% 
   filter_if(is.numeric, all_vars((.) != 0))
   
@@ -573,11 +605,12 @@ cover_bar <- rich %>%
 cover_bar
 
 library(ggpubr)
-ggarrange(rich_bar, cover_bar, ncol = 1, nrow = 2, common.legend = TRUE, legend="bottom")
+bar_rich_cover <- ggarrange(rich_bar, cover_bar, ncol = 1, nrow = 2, common.legend = TRUE, legend="bottom")
 
+
+ggsave("fig-bar-rich-cover.jpg", bar_rich_cover, width = 12, height = 12)
 
 ```
-
 
 ```{r diversity calculations}
 
@@ -587,7 +620,7 @@ div.join <- lst(d1979_grps, d1999_grps, d2019_grps) %>%
   mutate(Assemblage = ifelse(Association_Type2 == 1, "Sedge",
                       ifelse(Association_Type2 == 2, "Fescue", "Bogbean"))) %>% 
   relocate(Assemblage, .after = Year) %>% 
-  select(-Transect, -Association_Type, -Association_Type2, -Association_Subtype) 
+  select(-Association_Type2) 
 #view(div.join)
 
 # Filter each year; n quadrat = nrow
@@ -610,7 +643,7 @@ sp99 <- div99[, colSums(div99 != 0) > 0]
 ncol(sp99) #45
 
 sp19 <- div19[, colSums(div19 != 0) > 0]
-ncol(sp19) #43
+ncol(sp19) #44
 
 ##~~~~~~~~~~~~~~~~~~~
 # Alpha diversity
@@ -625,7 +658,7 @@ mean(sp_plot99) #9.55
 sd(sp_plot99) #3.30
 
 sp_plot19 <- apply(sp19 >0,1,sum)
-mean(sp_plot19) #8.36
+mean(sp_plot19) #9.36
 sd(sp_plot19) #3.03
 
 ##~~~~~~~~~~~~~~~~~~~
@@ -634,38 +667,11 @@ sd(sp_plot19) #3.03
 
 ncol(sp79)/mean(sp_plot79) #4.82
 ncol(sp99)/mean(sp_plot99) #4.71
-ncol(sp19)/mean(sp_plot19) #5.14
+ncol(sp19)/mean(sp_plot19) #4.70
 
-
-
-#########################
-# trying to tidy the process 
-#########################
-
-# https://rdrr.io/rforge/vegan/man/betadiver.html#heading-9
-div <- div.join %>% 
-  select(AGST2:SASI2)
-view(div)
-
-d <- betadiver(div, "w")
-
-range(d - vegdist(div, binary=TRUE))
-
-#div <- div.join %>% 
-#group_by(Year, Assemblage)
-  #summarize_at(vars(count), funs(mean, sd))
-#view(div)
-# Beta diversity: total n species divided by density
-
-  #pivot_longer(AGST2:SYSU4, names_to = "species", values_to = "cover.class") %>% 
-  # %>% 
-  # group_by(Year, Assemblage)
-  #filter(!cover.class == 0) %>% 
-    #dplyr::summarise(b.div = div.join$count/mean)by(Year, Assemblage, Quadrat) %>% 
-  #mutate(count = n())
 
 ######################################################################
-## iterative but functional method - delete below here when tidy piped version complete
+## Diversity metrics by assemblage
 ######################################################################
 
 #######################
@@ -675,8 +681,9 @@ range(d - vegdist(div, binary=TRUE))
 # select only plots in sedge group
 sedge1979 <- d1979_grps %>% 
   filter(Association_Type2 == 1) %>% 
-  select(-(Association_Type2:Association_Subtype)) 
+  select(-(Association_Type2:Quadrat)) 
 #nrow(sedge1979) #34 plots
+
 
 sedge1999 <- d1999_grps %>% 
   filter(Association_Type2 == 1) %>% 
@@ -761,7 +768,7 @@ sp_present_fescue2019 <- fescue2019[, colSums(fescue2019 != 0) > 0]
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ncol = # species present
-ncol(sp_present_fescue1979) #47
+ncol(sp_present_fescue1979) #45
 ncol(sp_present_fescue1999) #41
 ncol(sp_present_fescue2019) #27
 
@@ -779,7 +786,7 @@ sp_plot_fescue2019 <- apply(sp_present_fescue2019 >0,1,sum)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # species density = mean # sp
-mean(sp_plot_fescue1979) #12.83
+mean(sp_plot_fescue1979) #10.83
 mean(sp_plot_fescue1999) #9.69
 mean(sp_plot_fescue2019) #5.83
 
@@ -824,7 +831,7 @@ sp_present_bogbean2019 <- bogbean2019[, colSums(bogbean2019 != 0) > 0]
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ncol = # species present
-ncol(sp_present_bogbean1979) #32
+ncol(sp_present_bogbean1979) #30
 ncol(sp_present_bogbean1999) #36
 ncol(sp_present_bogbean2019) #34
 
@@ -844,7 +851,7 @@ sp_plot_bogbean2019 <- apply(sp_present_bogbean2019 >0,1,sum)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # species density = mean # sp
-mean(sp_plot_bogbean1979) #12.84
+mean(sp_plot_bogbean1979) #10.84
 mean(sp_plot_bogbean1999) #11.50
 mean(sp_plot_bogbean2019) #10.46
 
@@ -858,7 +865,7 @@ sd(sp_plot_bogbean2019) #1.90
 # Beta diversity: total n species divided by density
 ##~~~~~~~~~~~~~~~~~~~
 
-ncol(sp_present_bogbean1979)/mean(sp_plot_bogbean1979) #2.49
+ncol(sp_present_bogbean1979)/mean(sp_plot_bogbean1979) #2.77
 ncol(sp_present_bogbean1999)/mean(sp_plot_bogbean1999) #3.13
 ncol(sp_present_bogbean2019)/mean(sp_plot_bogbean2019) #3.25
 ```
@@ -866,20 +873,9 @@ ncol(sp_present_bogbean2019)/mean(sp_plot_bogbean2019) #3.25
 RQ3: "What is the total community species turnover, and which species gained or lost are driving changes within each assemblage’s diversity?"
 ```{r turnover}
 # https://rdrr.io/cran/codyn/man/turnover.html
-#Note: turnover requires a column for abundance (not species presence/absence), here, Cover_class. "Cover_class" is a course abundance value where 0 = absent, 1 = 1-25% cover, 2 = 25-50% cover, etc. Because I want to understand turnover within the assemblage, I average all cover for a given species within that assemblage (across all quadrats (plots))
+#Note: turnover requires a column for abundance (not species presence/absence), here, Cover_class. "Cover_class" is a coarse abundance value where 0 = absent, 1 = 1-25% cover, 2 = 25-50% cover, etc. Because I want to understand turnover within the assemblage, I average all cover for a given species within that assemblage (across all quadrats (plots))
 
 ## Note: all calculations are comparison of 1979-1999, and 1999-2019. 
-
-
-# test.turnover <- join_40 %>% 
-#   filter(!Year == 1979)
-# 
-# test.total <- turnover(df = test.turnover, 
-#                      time.var = "Year", 
-#                      species.var = "Species", 
-#                      abundance.var = "mean_cover", 
-#                      replicate.var = "Assemblage", 
-#                      metric = "total")
 
 
  # Calculate relative total turnover within replicates
@@ -913,174 +909,46 @@ appear.res <- turnover(df=join_40,
  
  turnover <- turnover[, c("Assemblage", "Year", "appearance", "disappearance", "total")]
  
-kable(turnover, 
-   col.names = c("Assemblage", "Year", "Species \nAppearance", "Species \nDisappearance", "Total \nTurnover"),
-   align = "c",  digits = 2) %>% #booktabs = TRUE,
-   #row_spec(1:6, color = 'black') %>%
-   kable_styling(font_size = 18, latex_options = "scale_down") %>%
-    save_kable("turnover.jpeg")
+# kable(turnover, 
+#    col.names = c("Assemblage", "Year", "Species \nAppearance", "Species \nDisappearance", "Total \nTurnover"),
+#    align = "c",  digits = 2) %>% #booktabs = TRUE,
+#    #row_spec(1:6, color = 'black') %>%
+#    kable_styling(font_size = 18, latex_options = "scale_down") %>%
+#     save_kable("turnover.jpeg")
  
 
  
-```
-
-```{r rank clock plots}
-library(wesanderson)
-
-# see https://cran.r-project.org/web/packages/codyn/vignettes/Temporal_Diversity_Indices.html 
-#need to select species of interest - use indicator analysis? rare/invasive/foundaitonal?
-## indicator analysis that appear in all 3 years? Poa palustris not in 2019...
-############################################################################################################
-# all species, but rainbow legend is hard to interpret
-
-# may need to use join.grps
-clock_sp <- join_40 %>% 
-   filter(Species %in% c("AGST2", "BICE", "CALY3", "DECE", "ELPA3", "EQFL", "EQPA", "EQVA", "FEAR3", 
-                         "GATR3", "IMCA", "JUAR",  "LAPA4", "LYSA2", "LYTH2", "MEAQ", "METR3", "MYSC", 
-                         "PHAR3", "POPA2", "SALA2", "SALUL", "SCTA2", "SIHE4", "TRWO"))
-                         
- 
-# ggplot(clock_sp, aes(Year, mean_cover, color = Species)) + 
-#    geom_line(size = 2) + coord_polar() + theme_classic() +
-#    facet_wrap(~Assemblage) 
- 
- 
- # select only 2 most significant species from each year
-# clock_select_sp <- join_40 %>% 
-#    filter(Species %in% c("CALY3", "SALA2", "AGST2", "FEAR3", "SALUL", "POPA2", "MEAQ", "METR3", "MYSC", "PHAR3"))
-#             
-# ggplot(clock_select_sp, aes(Year, mean_cover, color = Species)) + 
-#    geom_line(size = 2) + coord_polar() + theme_classic() +
-#    facet_wrap(~Assemblage) + 
-#    labs(x = "", 
-#         y = "Cover abundance class (mean)")
-############################################################################################################
-# By assemblage. Clunky, but easier to manipulate legend and read
- #Note: Species shown are the two most significant from the indicator species analysis. 
-#########################################
-# Bogbean
-#########################################
-
-clock_bogbean <- join_40 %>% 
-   filter(Assemblage == "Bogbean") %>% 
-   filter(Species %in% c("METR3", "MYSC", "BICE", "LYSA2", "EQFL", "LYTH2", "MEAQ", "JUAR", "ELPA3",  "DECE")) %>% 
-   mutate(Species = recode(Species, "METR3" = "Menyanthes trifoliata", "MYSC" = "Myosotis scorpiodes", "BICE" = "Bidens cernua", "LYSA2" = "Lythrum salicaria", 
-                            "EQFL" = "Equisetum fluviatile", "LYTH2" = "Lysimachia thyrsiflora", "MEAQ" = "Mentha aquatica", "JUAR" = "Juncus articulatus", 
-                           "ELPA3" = "Eleocharis palustris", "DECE" = "Deschampsia caespitosa")) 
-
-# select only three most significant species per year
-clock_bogbean_select <- join_40 %>% 
-   filter(Assemblage == "Bogbean") %>% 
-   filter(Species %in% c("METR3", "MYSC", "MEAQ", "BICE", "LYSA2", "LYTH2")) %>% 
-   mutate(Species = recode(Species, "METR3" = "Menyanthes trifoliata", "MYSC" = "Myosotis scorpiodes", "MEAQ" = "Mentha aquatica", "BICE" = "Bidens cernua", "LYSA2" = "Lythrum salicaria", "LYTH2" = "Lysimachia thyrsiflora"))
- 
-bogbean.clock <- ggplot(clock_bogbean_select, aes(Year, mean_cover, color = Species)) + 
-   geom_line(size = 2) + coord_polar() + theme_classic() +
-   theme(text = element_text(size = 18), 
-         #axis.text.x=element_blank(), # remove all x axis labels in polar_coord
-         #axis.text.x=element_text(angle = 25),
-         legend.text = element_text(face = "italic"), 
-         legend.title=element_blank(), 
-         legend.position="right") +
-   #guides(colour = guide_legend(nrow = 3)) + 
-  #geom_text(aes(x = Year + 0.5,label = Year)) +
-  scale_x_continuous(breaks=c(1981, 1999, 2018), labels = c(1979, 1999, 2019)) +
-  #guides(x = guide_axis(angle = 90)) +
-  #guides(x = guide_axis(n.dodge = 5)) +
-  labs(x = "Bogbean", y = "") +
-   scale_color_brewer(palette = "Dark2")
-bogbean.clock
-
-
-
-#########################################
-# Fescue
-#########################################
-# elected to keep top two indicator species for visualization due to greatest changes observed
-
-clock_fescue <- join_40 %>% 
-   filter(Assemblage == "Fescue") %>% 
-   filter(Species %in% c("FEAR3", "SALUL",  "SIHE4", "POPA2", "PHAR3",  "AGST2")) %>% 
-    mutate(Species = recode(Species, "FEAR3" = "Festuca arundinacea", "SALUL" = "Salix lasiandra",  "SIHE4" = "Sidalcia hendersonii", "POPA2" = "Poa palustris", "PHAR3" = "Phalaris arundinacea", "AGST2" = "Agrostis stolonifera")) 
-
-fescue.clock <- ggplot(clock_fescue, aes(Year, mean_cover, color = Species)) + 
-   geom_line(size = 2) + coord_polar() + theme_classic() +
-     theme(text = element_text(size = 18), 
-         legend.text = element_text(face = "italic"), 
-         legend.title=element_blank(), 
-         legend.position="right") +
-   #guides(colour = guide_legend(nrow = 3)) + 
-  scale_x_continuous(breaks=c(1981, 1999, 2018), labels = c(1979, 1999, 2019)) +
-  labs(x = "Fescue", 
-        y = "", 
-        color = "Species") +
-   scale_color_brewer(palette = "Set2")
-
-#########################################
- # Sedge
-#########################################
-clock_sedge <- join_40 %>% 
-   filter(Assemblage == "Sedge") %>% 
-   filter(Species %in% c("CALY3", "SALA2", "SCTA2", "AGST2", "IMCA")) %>% 
-    mutate(Species = recode(Species, "CALY3" = "Carex lyngbyei", "SALA2" = "Sagittaria latifolia", "SCTA2" = "Schoenoplectus tabernaemontani",
-                           "AGST2" = "Agrostis stolonifera", "IMCA" = "Impatiens capensis"))
-
-sedge.clock<- ggplot(clock_sedge, aes(Year, mean_cover, color = Species)) + 
-   geom_line(size = 2) + coord_polar() + theme_classic() +
-     theme(text = element_text(size = 18), 
-         legend.text = element_text(face = "italic"), 
-         legend.title=element_blank(), 
-         legend.position="right") +
-   #guides(colour = guide_legend(nrow = 3)) + 
-  scale_x_continuous(breaks=c(1981, 1999, 2018), labels = c(1979, 1999, 2019)) +
-    labs(x = "Sedge", 
-        y = "", 
-        color = "Species") +
-   scale_color_manual(values = wes_palette("Moonrise3"))
-
-## panel format w/ ggpubr
-library(ggpubr)
-clock.panel <- ggarrange(sedge.clock, fescue.clock, bogbean.clock,
-          ncol = 1, nrow = 3, align = "hv") 
-clock.panel
-
-clock.ann <- annotate_figure(clock.panel, left = text_grob("Cover abundance class (mean)", size = 20, rot = 90, hjust = .5, vjust = 1))
-clock.ann
-
-#ggsave("fig-clock-panel.jpg", clock.ann, width = 12, height = 16)
-
 ```
 
 ```{r indicator bar charts}
 
 
-
-# METR, MEAQ, LYSA/SIHE, PHAR/IRPS
+# Menyanthes_trifoliata, Mentha_aquatica, Lythrum_salicaria/Sidalcea_hendersonii, Phalaris_arundinacea/Iris_pseudacorus
 freq.bogbean <- join_40 %>% 
    filter(Assemblage == "Bogbean") %>% 
-   filter(Species %in% c("METR3", "MEAQ", "SIHE4", "LYSA2", "PHAR3", "IRPS")) %>% 
+   filter(Species %in% c("Menyanthes_trifoliata", "Mentha_aquatica", "Sidalcea_hendersonii", "Lythrum_salicaria", "Phalaris_arundinacea", "Iris_pseudacorus")) %>% 
    mutate(Species = factor(Species, 
-                           levels = c("METR3", "MEAQ", "SIHE4", "LYSA2", "PHAR3", "IRPS"), 
-                           labels = c("METR3", "MEAQ", "SIHE4", "LYSA2", "PHAR3", "IRPS"))) %>% 
-   mutate(Species = recode(Species, "METR3" = "Menyanthes trifoliata", "MEAQ" = "Mentha aquatica*", "LYSA2" = "Lythrum salicaria*", "SIHE4" = "Sidalcia hendersonii", "PHAR3" = "Phalaris arundinaceae*", "IRPS" = "Iris pseudocorus*"))
+                           levels = c("Menyanthes_trifoliata", "Mentha_aquatica", "Sidalcea_hendersonii", "Lythrum_salicaria", "Phalaris_arundinacea", "Iris_pseudacorus"), 
+                           labels = c("Menyanthes_trifoliata", "Mentha_aquatica", "Sidalcea_hendersonii", "Lythrum_salicaria", "Phalaris_arundinacea", "Iris_pseudacorus"))) %>% 
+   mutate(Species = recode(Species, "Menyanthes_trifoliata" = "Menyanthes trifoliata", "Mentha_aquatica" = "Mentha aquatica*", "Lythrum_salicaria" = "Lythrum salicaria*", "Sidalcea_hendersonii" = "Sidalcia hendersonii", "Phalaris_arundinacea" = "Phalaris arundinaceae*", "Iris_pseudacorus" = "Iris pseudacorus*"))
 
-# FEAR, SALUL (tip for Disc), LYSA/SIHE, PHAR/IRPS 
+# FEAR, Salix_lasiandra (tip for Disc), LYSA/SIHE, PHAR/Iris_pseudacorus 
 freq.fescue <- join_40 %>% 
    filter(Assemblage == "Fescue") %>% 
-   filter(Species %in% c("FEAR3", "SALUL", "SIHE4", "LYSA2", "PHAR3", "IRPS")) %>% 
+   filter(Species %in% c("Festuca_arundinacea", "Salix_lasiandra", "Sidalcea_hendersonii", "Lythrum_salicaria", "Phalaris_arundinacea", "Iris_pseudacorus")) %>% 
    mutate(Species = factor(Species, 
-                           levels = c("FEAR3", "SALUL", "SIHE4", "LYSA2", "PHAR3", "IRPS"), 
-                           labels = c("FEAR3", "SALUL", "SIHE4", "LYSA2", "PHAR3", "IRPS"))) %>% 
-  mutate(Species = recode(Species, "FEAR3" = "Festuca arundinacea*", "SALUL" = "Salix lucida",  "SIHE4" = "Sidalcia hendersonii", "LYSA2" = "Lythrum salicaria*", "PHAR3" = "Phalaris arundinaceae*", "IRPS" = "Iris pseudocorus*")) 
+                           levels = c("Festuca_arundinacea", "Salix_lasiandra", "Sidalcea_hendersonii", "Lythrum_salicaria", "Phalaris_arundinacea", "Iris_pseudacorus"), 
+                           labels = c("Festuca_arundinacea", "Salix_lasiandra", "Sidalcea_hendersonii", "Lythrum_salicaria", "Phalaris_arundinacea", "Iris_pseudacorus"))) %>% 
+  mutate(Species = recode(Species, "Festuca_arundinacea" = "Festuca arundinacea*", "Salix_lasiandra" = "Salix lucida",  "Sidalcea_hendersonii" = "Sidalcia hendersonii", "Lythrum_salicaria" = "Lythrum salicaria*", "Phalaris_arundinacea" = "Phalaris arundinaceae*", "Iris_pseudacorus" = "Iris pseudacorus*")) 
 
-#CALY, SALUL, LYTHE/SIHE, PHAR/IRPS
+#CALY, Salix_lasiandra, LYTHE/SIHE, PHAR/Iris_pseudacorus
 freq.sedge <- join_40 %>% 
    filter(Assemblage == "Sedge") %>% 
-   filter(Species %in% c("CALY3", "SALUL", "SIHE4", "LYSA2", "PHAR3",  "IRPS")) %>% 
+   filter(Species %in% c("Carex_lyngbyei", "Salix_lasiandra", "Sidalcea_hendersonii", "Lythrum_salicaria", "Phalaris_arundinacea",  "Iris_pseudacorus")) %>% 
    mutate(Species = factor(Species, 
-                           levels = c("CALY3", "SALUL", "SIHE4", "LYSA2", "PHAR3",  "IRPS"), 
-                           labels = c("CALY3", "SALUL", "SIHE4", "LYSA2", "PHAR3",  "IRPS"))) %>% 
-   mutate(Species = recode(Species, "CALY3" = "Carex lyngbyei", "SALUL" = "Salix lucida",  "SIHE4" = "Sidalcia hendersonii", "LYSA2" = "Lythrum salicaria*", "PHAR3" = "Phalaris arundinaceae*", "IRPS" = "Iris pseudocorus*"))
+                           levels = c("Carex_lyngbyei", "Salix_lasiandra", "Sidalcea_hendersonii", "Lythrum_salicaria", "Phalaris_arundinacea",  "Iris_pseudacorus"), 
+                           labels = c("Carex_lyngbyei", "Salix_lasiandra", "Sidalcea_hendersonii", "Lythrum_salicaria", "Phalaris_arundinacea",  "Iris_pseudacorus"))) %>% 
+   mutate(Species = recode(Species, "Carex_lyngbyei" = "Carex lyngbyei", "Salix_lasiandra" = "Salix lucida",  "Sidalcea_hendersonii" = "Sidalcia hendersonii", "Lythrum_salicaria" = "Lythrum salicaria*", "Phalaris_arundinacea" = "Phalaris arundinaceae*", "Iris_pseudacorus" = "Iris pseudacorus*"))
 
 
 
@@ -1176,49 +1044,6 @@ mean.cover <- ggplot(join_40, aes(x = Species, y = mean_cover, fill = Year)) +
   scale_fill_manual(values = year.col) +
   facet_grid(Assemblage ~ .)
 mean.cover
-
-
-```
-
-
-
-```{r summary tables - DEL}
-## Want: table with Assemblage, year, N plots and N species per assemblage
-
-# Year    Sedge                     Bogbean             Fescue
-#         N plot N species    N plot N species    N plot N species
-# 1979    x         y
-# 1999
-#2019
-
-join_summary <- lst(d1979_grps, d1999_grps, d2019_grps) %>% 
-  reduce(full_join) %>% 
-  replace(is.na(.), 0) %>% 
-  pivot_longer(AGST2:SYSU4, names_to = "Species", values_to = "Cover_class") %>% 
-   mutate(Assemblage = ifelse(Association_Type2 == 1, "Sedge",
-                      ifelse(Association_Type2 == 2, "Fescue", "Bogbean"))) %>% 
-  select(-Transect, -Association_Type2, -Association_Type, -Association_Subtype) 
-
-
-N_plots_sp <- join_summary %>% 
-  group_by(Year) %>% 
-  summarise(Assemblage = n(), 
-    N_plots = sum(Quadrat), 
-    N_sp = sum(Species))
-
-
-
-
-
-
-## Want: table of species, cover class, and % change per time point (?)
-
-#           Mean cover class
-# Species   1979      1999      2019      % change since 1979
-# A         3           2         1           -50%
-# B
-# C 
-
 
 
 ```
@@ -3281,6 +3106,133 @@ ggplot(cs_vr, aes(VR, stability, color = Assemblage, shape = Assemblage)) +
 # See Fig. 3 at https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.12569
 ## High variance ratio should indicate low stability, which is reflected in data here. 
 ## Bogbean assemblage has highest stability, and lowest VR, while Fescue group has greatest VR and thus lowest stability. Sedge is intermediate
+
+```
+
+```{r rank clock plots}
+library(wesanderson)
+
+# see https://cran.r-project.org/web/packages/codyn/vignettes/Temporal_Diversity_Indices.html 
+#need to select species of interest - use indicator analysis? rare/invasive/foundaitonal?
+## indicator analysis that appear in all 3 years? Poa palustris not in 2019...
+############################################################################################################
+# all species, but rainbow legend is hard to interpret
+
+# may need to use join.grps
+clock_sp <- join_40 %>% 
+   filter(Species %in% c("AGST2", "BICE", "CALY3", "DECE", "ELPA3", "EQFL", "EQPA", "EQVA", "FEAR3", 
+                         "GATR3", "IMCA", "JUAR",  "LAPA4", "LYSA2", "LYTH2", "MEAQ", "METR3", "MYSC", 
+                         "PHAR3", "POPA2", "SALA2", "SALUL", "SCTA2", "SIHE4", "TRWO"))
+                         
+ 
+# ggplot(clock_sp, aes(Year, mean_cover, color = Species)) + 
+#    geom_line(size = 2) + coord_polar() + theme_classic() +
+#    facet_wrap(~Assemblage) 
+ 
+ 
+ # select only 2 most significant species from each year
+# clock_select_sp <- join_40 %>% 
+#    filter(Species %in% c("CALY3", "SALA2", "AGST2", "FEAR3", "SALUL", "POPA2", "MEAQ", "METR3", "MYSC", "PHAR3"))
+#             
+# ggplot(clock_select_sp, aes(Year, mean_cover, color = Species)) + 
+#    geom_line(size = 2) + coord_polar() + theme_classic() +
+#    facet_wrap(~Assemblage) + 
+#    labs(x = "", 
+#         y = "Cover abundance class (mean)")
+############################################################################################################
+# By assemblage. Clunky, but easier to manipulate legend and read
+ #Note: Species shown are the two most significant from the indicator species analysis. 
+#########################################
+# Bogbean
+#########################################
+
+clock_bogbean <- join_40 %>% 
+   filter(Assemblage == "Bogbean") %>% 
+   filter(Species %in% c("METR3", "MYSC", "BICE", "LYSA2", "EQFL", "LYTH2", "MEAQ", "JUAR", "ELPA3",  "DECE")) %>% 
+   mutate(Species = recode(Species, "METR3" = "Menyanthes trifoliata", "MYSC" = "Myosotis scorpiodes", "BICE" = "Bidens cernua", "LYSA2" = "Lythrum salicaria", 
+                            "EQFL" = "Equisetum fluviatile", "LYTH2" = "Lysimachia thyrsiflora", "MEAQ" = "Mentha aquatica", "JUAR" = "Juncus articulatus", 
+                           "ELPA3" = "Eleocharis palustris", "DECE" = "Deschampsia caespitosa")) 
+
+# select only three most significant species per year
+clock_bogbean_select <- join_40 %>% 
+   filter(Assemblage == "Bogbean") %>% 
+   filter(Species %in% c("METR3", "MYSC", "MEAQ", "BICE", "LYSA2", "LYTH2")) %>% 
+   mutate(Species = recode(Species, "METR3" = "Menyanthes trifoliata", "MYSC" = "Myosotis scorpiodes", "MEAQ" = "Mentha aquatica", "BICE" = "Bidens cernua", "LYSA2" = "Lythrum salicaria", "LYTH2" = "Lysimachia thyrsiflora"))
+ 
+bogbean.clock <- ggplot(clock_bogbean_select, aes(Year, mean_cover, color = Species)) + 
+   geom_line(size = 2) + coord_polar() + theme_classic() +
+   theme(text = element_text(size = 18), 
+         #axis.text.x=element_blank(), # remove all x axis labels in polar_coord
+         #axis.text.x=element_text(angle = 25),
+         legend.text = element_text(face = "italic"), 
+         legend.title=element_blank(), 
+         legend.position="right") +
+   #guides(colour = guide_legend(nrow = 3)) + 
+  #geom_text(aes(x = Year + 0.5,label = Year)) +
+  scale_x_continuous(breaks=c(1981, 1999, 2018), labels = c(1979, 1999, 2019)) +
+  #guides(x = guide_axis(angle = 90)) +
+  #guides(x = guide_axis(n.dodge = 5)) +
+  labs(x = "Bogbean", y = "") +
+   scale_color_brewer(palette = "Dark2")
+bogbean.clock
+
+
+
+#########################################
+# Fescue
+#########################################
+# elected to keep top two indicator species for visualization due to greatest changes observed
+
+clock_fescue <- join_40 %>% 
+   filter(Assemblage == "Fescue") %>% 
+   filter(Species %in% c("FEAR3", "SALUL",  "SIHE4", "POPA2", "PHAR3",  "AGST2")) %>% 
+    mutate(Species = recode(Species, "FEAR3" = "Festuca arundinacea", "SALUL" = "Salix lasiandra",  "SIHE4" = "Sidalcia hendersonii", "POPA2" = "Poa palustris", "PHAR3" = "Phalaris arundinacea", "AGST2" = "Agrostis stolonifera")) 
+
+fescue.clock <- ggplot(clock_fescue, aes(Year, mean_cover, color = Species)) + 
+   geom_line(size = 2) + coord_polar() + theme_classic() +
+     theme(text = element_text(size = 18), 
+         legend.text = element_text(face = "italic"), 
+         legend.title=element_blank(), 
+         legend.position="right") +
+   #guides(colour = guide_legend(nrow = 3)) + 
+  scale_x_continuous(breaks=c(1981, 1999, 2018), labels = c(1979, 1999, 2019)) +
+  labs(x = "Fescue", 
+        y = "", 
+        color = "Species") +
+   scale_color_brewer(palette = "Set2")
+
+#########################################
+ # Sedge
+#########################################
+clock_sedge <- join_40 %>% 
+   filter(Assemblage == "Sedge") %>% 
+   filter(Species %in% c("CALY3", "SALA2", "SCTA2", "AGST2", "IMCA")) %>% 
+    mutate(Species = recode(Species, "CALY3" = "Carex lyngbyei", "SALA2" = "Sagittaria latifolia", "SCTA2" = "Schoenoplectus tabernaemontani",
+                           "AGST2" = "Agrostis stolonifera", "IMCA" = "Impatiens capensis"))
+
+sedge.clock<- ggplot(clock_sedge, aes(Year, mean_cover, color = Species)) + 
+   geom_line(size = 2) + coord_polar() + theme_classic() +
+     theme(text = element_text(size = 18), 
+         legend.text = element_text(face = "italic"), 
+         legend.title=element_blank(), 
+         legend.position="right") +
+   #guides(colour = guide_legend(nrow = 3)) + 
+  scale_x_continuous(breaks=c(1981, 1999, 2018), labels = c(1979, 1999, 2019)) +
+    labs(x = "Sedge", 
+        y = "", 
+        color = "Species") +
+   scale_color_manual(values = wes_palette("Moonrise3"))
+
+## panel format w/ ggpubr
+library(ggpubr)
+clock.panel <- ggarrange(sedge.clock, fescue.clock, bogbean.clock,
+          ncol = 1, nrow = 3, align = "hv") 
+clock.panel
+
+clock.ann <- annotate_figure(clock.panel, left = text_grob("Cover abundance class (mean)", size = 20, rot = 90, hjust = .5, vjust = 1))
+clock.ann
+
+#ggsave("fig-clock-panel.jpg", clock.ann, width = 12, height = 16)
 
 ```
 
