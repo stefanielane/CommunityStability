@@ -257,8 +257,8 @@ abund99 = d1999_grps[,5:ncol(d1999_grps)]
 assoc99 = d1999_grps$Association_Type2
 
 ## turn comments off to run - takes a minute
-# inv99_r.g = multipatt(abund99, assoc99, func = "r.g", control = how(nperm=9999))
-# summary(inv99_r.g)
+inv99_r.g = multipatt(abund99, assoc99, func = "r.g", control = how(nperm=9999))
+summary(inv99_r.g)
 
 ## 1 = Sedge
 ## 2 = Fescue
