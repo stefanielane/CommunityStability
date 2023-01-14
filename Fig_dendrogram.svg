@@ -284,4 +284,7 @@
 <text x='534.92' y='171.93' style='font-size: 16.00px; font-family: "Arial";' textLength='35.60px' lengthAdjust='spacingAndGlyphs'>1979</text>
 <text x='534.92' y='189.21' style='font-size: 16.00px; font-family: "Arial";' textLength='35.60px' lengthAdjust='spacingAndGlyphs'>1999</text>
 <text x='534.92' y='206.49' style='font-size: 16.00px; font-family: "Arial";' textLength='35.60px' lengthAdjust='spacingAndGlyphs'>2019</text>
-<text x='298.76' y='356.40' text-anchor='middle' style='font-size: 20.00px; font-family: "Arial";' textLength='164.55px' lengthAdjust='spacingAndGlyphs'
+<text x='298.76' y='356.40' text-anchor='middle' style='font-size: 20.00px; font-family: "Arial";' textLength='164.55px' lengthAdjust='spacingAndGlyphs'>Species of interest</text>
+<text transform='translate(25.08,110.51) rotate(-90)' text-anchor='middle' style='font-size: 20.00px; font-family: "Arial";' textLength='277.94px' lengthAdjust='spacingAndGlyphs'>Cover abundance class (mean)</text>
+</g>
+</svg>
