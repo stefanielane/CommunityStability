@@ -957,13 +957,14 @@ freq.bogbean <- join_40 %>%
    mutate(Species = recode(Species, "Menyanthes_trifoliata" = "Menyanthes \ntrifoliata", "Mentha_aquatica" = "Mentha \naquatica*", "Lythrum_salicaria" = "Lythrum \nsalicaria*", "Sidalcea_hendersonii" = "Sidalcea \nhendersonii", "Phalaris_arundinacea" = "Phalaris \narundinacea*", "Iris_pseudacorus" = "Iris \npseudacorus*"))
 
 # FEAR, Salix_lasiandra (tip for Disc), LYSA/SIHE, PHAR/Iris_pseudacorus 
+#### NOTE: nomenclature for Festuca arundinacea (FEAR) updated to Schedonorus arundinaceus
 freq.fescue <- join_40 %>% 
    filter(Assemblage == "Fescue") %>% 
    filter(Species %in% c("Festuca_arundinacea", "Salix_lasiandra", "Sidalcea_hendersonii", "Lythrum_salicaria", "Phalaris_arundinacea", "Iris_pseudacorus")) %>% 
    mutate(Species = factor(Species, 
                            levels = c("Festuca_arundinacea", "Salix_lasiandra", "Sidalcea_hendersonii", "Lythrum_salicaria", "Phalaris_arundinacea", "Iris_pseudacorus"), 
                            labels = c("Festuca_arundinacea", "Salix_lasiandra", "Sidalcea_hendersonii", "Lythrum_salicaria", "Phalaris_arundinacea", "Iris_pseudacorus"))) %>% 
-  mutate(Species = recode(Species, "Festuca_arundinacea" = "Festuca \narundinacea*", "Salix_lasiandra" = "Salix \nlucida",  "Sidalcea_hendersonii" = "Sidalcea \nhendersonii", "Lythrum_salicaria" = "Lythrum \nsalicaria*", "Phalaris_arundinacea" = "Phalaris \narundinacea*", "Iris_pseudacorus" = "Iris \npseudacorus*")) 
+  mutate(Species = recode(Species, "Festuca_arundinacea" = "Schedonorus \narundinaceus*", "Salix_lasiandra" = "Salix \nlucida",  "Sidalcea_hendersonii" = "Sidalcea \nhendersonii", "Lythrum_salicaria" = "Lythrum \nsalicaria*", "Phalaris_arundinacea" = "Phalaris \narundinacea*", "Iris_pseudacorus" = "Iris \npseudacorus*")) 
 
 #CALY, Salix_lasiandra, LYTHE/SIHE, PHAR/Iris_pseudacorus
 freq.sedge <- join_40 %>% 
@@ -1046,7 +1047,7 @@ freq.bar <- annotate_figure(freq.panel,
                                                size = 20))
 freq.bar
 
-ggsave("fig-frequency-bar.jpg", freq.bar, width = 12, height = 16)
+#ggsave("fig-frequency-bar.jpg", freq.bar, width = 12, height = 16)
 
 
 
