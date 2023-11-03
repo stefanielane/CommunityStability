@@ -181,10 +181,13 @@ d1979_ward <- d1979_select %>%
 mycols1979 <- c("#009E73", "#0072B2", "#E69F00")
 dend1979 <-  as.dendrogram(d1979_ward) %>%
    set("branches_lwd", 1.25) %>% # Branches line width
-   set("branches_k_color", mycols1979, k = 3) %>% # Color branches by groups
-    set("labels_col", "white") # mask labels by changing color
+   set("branches_k_color", 
+       mycols1979, 
+       k = 3) %>% # Color branches by groups
+    set("labels_col", 
+        "black") %>%  # mask labels by changing color
    #set("labels_colors", mycols, k = 3) %>%  # Color labels by groups
-   #set("labels_cex", 0.5) # Change label size
+   set("labels_cex", 0.5) # Change label size
 #fviz_dend(dend2) 
 
 #changing font sizes/formatting: https://stackoverflow.com/questions/17232178/change-label-size-of-cluster-dendrogram-in-r-3-01
@@ -199,7 +202,7 @@ plot(dend1979,
 
 
 #install.packages("svglite")
-library(svglite)
+#library(svglite)
 
 # svglite("Fig_dendrogram.svg", 
 #         width=8, 
@@ -234,6 +237,8 @@ library(svglite)
 
 #following https://jkzorz.github.io/2019/07/02/Indicator-species-analysis.html 
 
+# another good tutorial at https://sites.ualberta.ca/~ahamann/teaching/renr690/labs/Lab9h.pdf
+
 ###########################
 # 2019
 ###########################
@@ -255,8 +260,8 @@ abund = d2019_grps[,5:ncol(d2019_grps)]
 assoc = d2019_grps$Association_Type2
 
 ## turn comments off to run - takes a minute
-# inv_r.g = multipatt(abund, assoc, func = "r.g", control = how(nperm=9999))
-# summary(inv_r.g, indvalcomp = TRUE)
+inv_r.g = multipatt(abund, assoc, func = "r.g", control = how(nperm=9999))
+summary(inv_r.g, indvalcomp = TRUE)
 
 ## 1 = Sedge
 ## 2 = Fescue
@@ -302,14 +307,153 @@ abund79 = d1979_grps[,7:ncol(d1979_grps)]
 assoc79 = d1979_grps$Association_Type2
 
 ## turn comments off to run - takes a minute
-# inv79_r.g = multipatt(abund79, assoc79, func = "r.g", control = how(nperm=9999))
-# summary(inv79_r.g)
+inv79_r.g = multipatt(abund79, assoc79, func = "r.g", control = how(nperm=9999))
+summary(inv79_r.g)
 
 ## 1 = Sedge
 ## 2 = Fescue
 ## 3 = Bogbean
 
 ```
+
+```{r EXTRA - ISA with different cluster groups (ED = 35)}
+
+###########################
+# 2019
+###########################
+
+d2019_2clstrs <- align19 %>% mutate(Association_Type2 = case_when(Quadrat %in% c(26, 72, 23, 22, 5, 24, 39, 73, 20, 21, 25, 6, 7, 36, 37, 35, 38, 4, 34, 33, 71, 63, 11, 62, 48, 49, 27, 42) ~1, Quadrat %in% c(44, 43, 47, 12, 32, 1, 66, 17, 29, 46, 31, 69, 28, 65, 67, 68, 30, 59, 19, 40, 74, 8, 10, 13, 9, 54, 50, 15, 55, 41, 70, 2, 52, 57, 53, 56, 64, 3, 16, 51, 58, 14, 18, 45, 60, 61) ~2))
+#View(d2019_clstrs)
+#Note: new column must be Association_Type2 to join with other data sets for NMS
+
+#move new column to beginning of df (if left at end, new column Association_Type gets counted in the indicspecies)
+d2019_2grps <- d2019_2clstrs %>% 
+  select(Association_Type2, everything())
+#view(d2019_grps)
+nrow(d2019_grps) #74
+
+abund2 = d2019_2grps[,5:ncol(d2019_2grps)]
+assoc2 = d2019_2grps$Association_Type2
+
+## turn comments off to run - takes a minute
+inv_r.g2 = multipatt(abund2, assoc2, func = "r.g", control = how(nperm=9999))
+summary(inv_r.g2, indvalcomp = TRUE)
+
+## 1 = bogbean
+## 2 = fescue (no sedge)
+
+###########################
+# 1999 
+###########################
+
+d1999_2clstrs <- align99 %>% mutate(Association_Type2 = case_when(Quadrat %in% c(39, 40, 31, 29, 30, 27, 26, 28, 32, 69, 22, 46, 23, 24, 87, 88, 94, 73, 72, 108, 85, 42, 44, 41, 43, 96, 95, 97, 12, 100, 101) ~1, Quadrat %in% c(82, 83, 13, 14, 84, 77, 78, 102, 103, 105, 98, 99, 81, 80, 104, 16, 15, 79, 10, 11, 37, 38, 20, 93, 107, 9, 106, 62, 25, 59, 61, 56, 57, 58, 68, 60, 67, 55, 86, 65, 66, 63, 64, 76, 74, 75, 50, 47, 49, 21, 48) ~2))
+
+#view(d1999_clstrs)
+
+#move new column to beginning of df (if left at end, new column Association_Type gets counted in the indicspecies)
+d1999_2grps <- d1999_2clstrs %>% 
+  select(Association_Type2, everything())
+#view(d1999_grps)
+
+abund99_2 = d1999_2grps[,5:ncol(d1999_2grps)]
+assoc99_2 = d1999_2grps$Association_Type2
+
+## turn comments off to run - takes a minute
+inv99_r.g2 = multipatt(abund99_2, assoc99_2, func = "r.g", control = how(nperm=9999))
+summary(inv99_r.g2)
+
+## 1 = Sedge
+## 2 = Poa/Bogbean
+
+###########################
+# 1979 
+###########################
+
+d1979_clstrs <- align79 %>% mutate(Association_Type2 = case_when(Quadrat %in% c(30, 31, 27, 24, 28, 29, 32, 108, 25, 26, 60, 48, 57, 58, 59, 49, 68, 69, 22, 23, 86, 93, 87, 88, 97, 94, 95, 96, 20, 72, 47, 73, 55, 56) ~1, Quadrat %in% c(80, 81, 64, 62, 65, 82, 83, 98, 84, 85, 78, 79, 63, 66, 50, 99, 100, 61, 67) ~3, Quadrat %in% c(38, 74, 11, 12, 107, 9, 10, 76, 106, 102, 101, 103, 42, 43, 14, 15, 40, 41, 39, 44, 21, 37, 16, 13, 104, 105, 75, 46, 77) ~2))
+#view(d1979_clstrs)
+
+#move new column to beginning of df (if left at end, new column Association_Type gets counted in the indicspecies)
+d1979_grps <- d1979_clstrs %>% 
+  select(Association_Type2, everything())
+#view(d1979_grps)
+
+abund79 = d1979_grps[,7:ncol(d1979_grps)]
+assoc79 = d1979_grps$Association_Type2
+
+## turn comments off to run - takes a minute
+inv79_r.g = multipatt(abund79, assoc79, func = "r.g", control = how(nperm=9999))
+summary(inv79_r.g)
+
+## 1 = Sedge
+## 2 = Fescue
+## 3 = Bogbean
+
+```
+
+
+```{r - how many plots per transect fall within each assemblage type?}
+
+
+gp79 <- d1979_grps %>% 
+          select(Association_Type2:Quadrat) 
+
+gp99 <- d1999_grps %>% 
+          select(Association_Type2:Quadrat) 
+
+gp19 <- d2019_grps %>% 
+          select(Association_Type2:Quadrat) 
+
+
+gp_all <- rbind(gp79, gp99, gp19) 
+
+spat1 <- gp_all %>% 
+              mutate(Association_Type2 = recode(Association_Type2, 
+                                                "1" = "sedge", 
+                                                "2" = "fescue",
+                                                "3" = "bogbean")) %>% 
+              group_by(Year, Transect) %>% 
+              mutate(n_xsect = n()) 
+
+spat2 <- spat1 %>% 
+            group_by(Year, Transect, Association_Type2) %>% 
+            mutate(n_assmb = n(), 
+                   pct = round(100*n_assmb/n_xsect, 0))
+
+spatial <- spat2 %>% 
+              select(-Quadrat) %>% 
+              distinct()
+
+#View(spatial)
+
+spatial$Year <- as.factor(spatial$Year)
+
+spatial$Association_Type2 <- factor(spatial$Association_Type2, 
+                                    levels = c("sedge", "fescue", "bogbean"), 
+                                    labels = c("Sedge", "Fescue", "Bogbean"))
+
+spatial_bar <- spatial %>% 
+            ggplot(aes(x = Year, y = pct)) +
+            geom_col(position = position_dodge(width = 1, 
+                                               preserve = "single")) +
+            theme_classic() + 
+            labs(y = "Percentage of plots per transect in each cluster assemblage",
+                 x = "Year of observation") +
+            theme(text = element_text(size = 16),
+                  panel.spacing.x = unit(1.25, "lines"),
+                  panel.spacing.y = unit(1.25, "lines"),
+                  axis.text.x = element_text(angle = 25, 
+                                             hjust = 1)) +
+            scale_y_continuous(limits = c(0, 100), 
+                               breaks = c(0, 25, 50, 75, 100)) +
+            facet_grid(Transect ~ Association_Type2, 
+                       space = "free") 
+spatial_bar
+
+#ggsave("fig-spatial-bar.jpg", spatial_bar, width = 12, height = 12)
+
+
+```
+
 
 RQ 1 supplemental - using Bray Curtis 
 ```{r Cluster analysis - Bray-Curtis}
@@ -687,6 +831,7 @@ sd(sp_plot19) #3.03
 
 ##~~~~~~~~~~~~~~~~~~~
 # Beta diversity: total n species divided by density
+# total sp/mean per quadrat
 ##~~~~~~~~~~~~~~~~~~~
 
 ncol(sp79)/mean(sp_plot79) #4.82
@@ -1047,7 +1192,7 @@ freq.bar <- annotate_figure(freq.panel,
                                                size = 20))
 freq.bar
 
-#ggsave("fig-frequency-bar.jpg", freq.bar, width = 12, height = 16)
+ggsave("fig-frequency-bar.jpg", freq.bar, width = 12, height = 16)
 
 
 
